@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- WHITELABEL: Title can be dynamic, e.g., Thank You - {{ agency.name }} -->
+    <title>Thank You - GenGreeting</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+        .gradient-bg { background-color: #0B1120; background-image: radial-gradient(at 10% 20%, hsla(217, 78%, 20%, 1) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(269, 78%, 25%, 1) 0px, transparent 50%), radial-gradient(at 80% 90%, hsla(300, 78%, 25%, 1) 0px, transparent 50%); }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="py-5 px-6">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold tracking-tighter text-center sm:text-left">
+                <!-- WHITELABEL: App name can be dynamic, e.g., {{ agency.appName | default: 'GenGreeting' }} -->
+                <span class="text-blue-400">Gen</span>Greeting
+            </h1>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <main class="gradient-bg flex-grow flex items-center justify-center py-20 px-6">
+        <div class="container mx-auto text-center max-w-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-12">
+             <div class="w-24 h-24 mx-auto mb-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center border-2 border-green-500">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">You're All Set!</h2>
+            <p class="text-lg text-gray-300 mb-8">
+                Thank you for signing up. You're ready to start creating amazing, personalized greeting cards. Check your email for a confirmation.
+            </p>
+            <!-- NOTE FOR GHL USER: Replace '#' with the actual URL of your hosted React application -->
+            <!-- WHITELABEL: This link could also be dynamic, e.g., https://{{ agency.customDomain }} -->
+            <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 inline-block">
+                Go to the App
+            </a>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-center py-6">
+        <!-- WHITELABEL: Copyright can be dynamic, e.g., &copy; 2024 {{ agency.name }}. All Rights Reserved. -->
+        <p class="text-gray-500">&copy; 2024 GenGreeting. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>

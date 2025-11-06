@@ -1,0 +1,84 @@
+import React, { useState } from 'react';
+import { generateImageWithImagen } from '../services/geminiService';
+import { SparklesIcon } from './icons/SparklesIcon';
+
+export const ImageGenerator: React.FC = () => {
+    const [prompt, setPrompt] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+    const handleGenerate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!prompt.trim()) return;
+
+        setIsLoading(true);
+        setError(null);
+        setImageUrl(null);
+
+        try {
+            const result = await generateImageWithImagen(prompt);
+            setImageUrl(result);
+        } catch (e: any) {
+            setError(e.message || 'An unexpected error occurred.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="w-full max-w-4xl mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <form onSubmit={handleGenerate}>
+                    <label htmlFor="image-prompt" className="block text-lg font-medium text-gray-800 dark:text-gray-200">
+                        Enter your image prompt
+                    </label>
+                    <div className="mt-2 flex flex-col sm:flex-row gap-3">
+                        <input
+                            id="image-prompt"
+                            type="text"
+                            value={prompt}
+                            onChange={(e) => setPrompt(e.target.value)}
+                            placeholder="e.g., 'A robot holding a red skateboard'"
+                            className="flex-grow w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-3 px-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            disabled={isLoading}
+                        />
+                        <button
+                            type="submit"
+                            disabled={isLoading || !prompt.trim()}
+                            className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200"
+                        >
+                            <SparklesIcon className="h-5 w-5 mr-2 -ml-1" />
+                            {isLoading ? 'Generating...' : 'Generate'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div className="mt-8">
+                {isLoading && (
+                     <div className="text-center" role="status">
+                        <div className="flex justify-center items-center">
+                            <svg className="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                        <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mt-4">Creating your image with Imagen...</p>
+                    </div>
+                )}
+                {error && (
+                    <div className="text-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
+                        <strong className="font-bold">Generation Failed: </strong>
+                        <span className="block sm:inline">{error}</span>
+                    </div>
+                )}
+                {imageUrl && (
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 aspect-square max-w-lg mx-auto">
+                        <img src={imageUrl} alt={prompt} className="w-full h-full object-contain rounded-lg" />
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
