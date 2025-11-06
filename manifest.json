@@ -1,6 +1,6 @@
 {
-  "name": "GenGreeting AI Card Generator",
-  "short_name": "GenGreeting",
+  "name": "AI Greetings - Card Generator",
+  "short_name": "AI Greetings",
   "description": "Upload a CSV of contacts to generate personalized greeting cards using AI. Each card features a unique illustration based on your prompt and includes the recipient's name.",
   "start_url": ".",
   "display": "standalone",
