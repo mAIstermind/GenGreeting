@@ -1,4 +1,5 @@
-const CACHE_NAME = 'gengreeting-cache-v1';
+
+const CACHE_NAME = 'gengreeting-cache-v5';
 
 // On install, we don't need to precache much, the fetch handler will do it.
 self.addEventListener('install', event => {
@@ -23,7 +24,7 @@ self.addEventListener('activate', event => {
 // On fetch, use a cache-then-network strategy
 self.addEventListener('fetch', event => {
   // We only want to cache GET requests
-  if (event.request.method !== 'GET') {
+  if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
     return;
   }
 
