@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import JSZip from 'jszip';
-import saveAs from 'file-saver';
-import { FileUpload } from './components/FileUpload';
-import { ColumnMapper } from './components/ColumnMapper';
-import { CardGrid } from './components/CardGrid';
-import { ProgressBar } from './components/ProgressBar';
-import { Loader } from './components/Loader';
-import { EditModal } from './components/EditModal';
-import { SettingsModal } from './components/SettingsModal';
-import { LoginModal } from './components/LoginModal';
-import { RegisterModal } from './components/RegisterModal';
-import { RefreshIcon } from './components/icons/RefreshIcon';
-import { ZipIcon } from './components/icons/ZipIcon';
-import { UserCircleIcon } from './components/icons/UserCircleIcon';
-import { LoginIcon } from './components/icons/LoginIcon';
-import { LogoutIcon } from './components/icons/LogoutIcon';
-import { generateGreetingCardImage, brandCardImage } from './services/geminiService';
-import type { Contact, GeneratedCard } from './types';
-import type { PromptTemplate } from './promptTemplates';
-import { ImageGenerator } from './components/ImageGenerator';
-import type { BrandingConfig } from './branding';
+import { saveAs } from 'file-saver';
+import { FileUpload } from './components/FileUpload.tsx';
+import { ColumnMapper } from './components/ColumnMapper.tsx';
+import { CardGrid } from './components/CardGrid.tsx';
+import { ProgressBar } from './components/ProgressBar.tsx';
+import { Loader } from './components/Loader.tsx';
+import { EditModal } from './components/EditModal.tsx';
+import { SettingsModal } from './components/SettingsModal.tsx';
+import { LoginModal } from './components/LoginModal.tsx';
+import { RegisterModal } from './components/RegisterModal.tsx';
+import { RefreshIcon } from './components/icons/RefreshIcon.tsx';
+import { ZipIcon } from './components/icons/ZipIcon.tsx';
+import { UserCircleIcon } from './components/icons/UserCircleIcon.tsx';
+import { LoginIcon } from './components/icons/LoginIcon.tsx';
+import { LogoutIcon } from './components/icons/LogoutIcon.tsx';
+import { generateGreetingCardImage, brandCardImage } from './services/geminiService.ts';
+import type { Contact, GeneratedCard } from './types.ts';
+import type { PromptTemplate } from './promptTemplates.ts';
+import { ImageGenerator } from './components/ImageGenerator.tsx';
+import type { BrandingConfig } from './branding.ts';
 
 type AppState = 'idle' | 'mapping' | 'generating' | 'done';
 type AuthModalState = 'login' | 'register' | null;
@@ -76,7 +76,7 @@ function App() {
     Papa.parse(file, {
       header: false,
       preview: 1,
-      complete: (results) => {
+      complete: (results: any) => {
         const headers = results.data[0] as string[];
         if (headers && headers.length > 0) {
           setCsvHeaders(headers);
@@ -85,7 +85,7 @@ function App() {
           setError('Could not parse headers from the CSV file.');
         }
       },
-      error: (err) => {
+      error: (err: Error) => {
         setError(`Error parsing CSV file: ${err.message}`);
       }
     });
@@ -102,11 +102,11 @@ function App() {
     Papa.parse(csvFile, {
       header: true,
       skipEmptyLines: true,
-      complete: async (results) => {
+      complete: async (results: any) => {
         let parsedContacts = results.data.map((row: any) => ({
           name: row[mapping.name] || '',
           email: row[mapping.email] || '',
-        })).filter(c => c.name && c.email);
+        })).filter((c: Contact) => c.name && c.email);
         
         if (!isLoggedIn && parsedContacts.length > (TRIAL_LIMIT - cardsGeneratedInTrial)) {
           setError(`As a guest, you can generate ${TRIAL_LIMIT - cardsGeneratedInTrial} more cards. Your CSV has ${parsedContacts.length}. Please log in or upload a smaller file.`);
@@ -140,7 +140,7 @@ function App() {
         }
         setAppState('done');
       },
-      error: (err) => {
+      error: (err: Error) => {
         setError(`Error processing CSV file: ${err.message}`);
         setAppState('idle');
       }
@@ -202,7 +202,7 @@ function App() {
       setProgress(50 + (((i + 1) / cardsToZip.length) * 50));
     }
 
-    zip.generateAsync({ type: 'blob' }).then(content => {
+    zip.generateAsync({ type: 'blob' }).then((content: any) => {
       saveAs(content, 'greeting_cards.zip');
       setIsBranding(false);
       setProgress(0);
