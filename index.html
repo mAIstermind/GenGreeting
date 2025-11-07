@@ -14,6 +14,7 @@
       }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js" crossorigin></script>
   <script type="importmap">
 {
   "imports": {
@@ -41,6 +42,6 @@
         });
       }
     </script>
-    <script type="module" src="/index.tsx"></script>
+    <script type="text/babel" data-type="module" data-presets="env,react,typescript" src="/index.tsx"></script>
   </body>
 </html>
