@@ -23,7 +23,7 @@ self.addEventListener('activate', event => {
 
 // On fetch, use a cache-then-network strategy
 self.addEventListener('fetch', event => {
-  // We only want to cache GET requests
+  // We only want to cache GET requests from web URLs
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
     return;
   }
@@ -33,10 +33,9 @@ self.addEventListener('fetch', event => {
       return cache.match(event.request).then(response => {
         // Return response from cache if found, or fetch from network
         const fetchPromise = fetch(event.request).then(networkResponse => {
-          // If the request is successful, clone the response and store it in the cache.
-          // This will cache assets from our origin and from CDNs.
-          // We must be careful not to cache API calls.
-          if (networkResponse && networkResponse.ok && !event.request.url.includes('generativelanguage.googleapis.com')) {
+          // If the request is successful, clone it and store in the cache.
+          // We must be careful not to cache API calls or non-web requests.
+          if (networkResponse && networkResponse.ok && event.request.url.startsWith('http') && !event.request.url.includes('generativelanguage.googleapis.com')) {
             cache.put(event.request, networkResponse.clone());
           }
           return networkResponse;
