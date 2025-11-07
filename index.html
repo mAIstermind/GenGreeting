@@ -42,6 +42,12 @@
         });
       }
     </script>
+    <script>
+      // Polyfill 'process' for browser environment to prevent app crash
+      if (typeof window.process === 'undefined') {
+        window.process = { env: { API_KEY: '' } };
+      }
+    </script>
     <script type="text/babel" data-type="module" data-presets="env,react,typescript" src="/index.tsx"></script>
   </body>
 </html>
