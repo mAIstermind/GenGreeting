@@ -16,7 +16,7 @@ import { ZipIcon } from './components/icons/ZipIcon.tsx';
 import { UserCircleIcon } from './components/icons/UserCircleIcon.tsx';
 import { LoginIcon } from './components/icons/LoginIcon.tsx';
 import { LogoutIcon } from './components/icons/LogoutIcon.tsx';
-import { createGeminiService, type GeminiService } from './services/geminiService.ts';
+import { geminiService } from './services/geminiService.ts';
 import type { Contact, GeneratedCard } from './types.ts';
 import { ImageGenerator } from './components/ImageGenerator.tsx';
 import type { BrandingConfig } from './branding.ts';
@@ -25,7 +25,6 @@ import { promptTemplates } from './promptTemplates.ts';
 type AppState = 'idle' | 'mapping' | 'generating' | 'done';
 type AuthModalState = 'login' | 'register' | null;
 const TRIAL_LIMIT = 10;
-const API_KEY_ERROR_MESSAGE = "A Gemini API key is not configured. The application cannot function without it.";
 
 function App() {
   const [brandingConfig, setBrandingConfig] = useState<BrandingConfig | null>(null);
@@ -38,15 +37,11 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [editingCard, setEditingCard] = useState<GeneratedCard | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [brandName, setBrandName] = useState('');
-  const [brandLogo, setBrandLogo] = useState<string | null>(null);
+  const [brandName, setBrandName] = useState(() => localStorage.getItem('brand_name') || '');
+  const [brandLogo, setBrandLogo] = useState<string | null>(() => localStorage.getItem('brand_logo'));
   const [isBranding, setIsBranding] = useState(false);
   const [activeTab, setActiveTab] = useState<'csv' | 'single'>('csv');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-  // --- API Key & Service State ---
-  // FIX: Per coding guidelines, API key UI and local storage are removed. The key is only read from process.env.
-  const [geminiService, setGeminiService] = useState<GeminiService | null>(null);
 
   // --- Auth State ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -63,7 +58,6 @@ function App() {
             setBrandingConfig({ ...config, fullAppName });
         } else {
             console.error("Branding configuration not found.");
-            // Fallback branding
             const fallbackConfig = { appName: 'Greeting', appAccent: 'Gen', fullAppName: 'GenGreeting' };
             setBrandingConfig(fallbackConfig);
             document.title = `${fallbackConfig.fullAppName} - AI Card Generator`;
@@ -76,7 +70,6 @@ function App() {
     }
   }, []);
   
-  // Effect to handle online/offline status for PWA functionality
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -90,23 +83,18 @@ function App() {
     };
   }, []);
 
-  // Effect to initialize the Gemini service
-  useEffect(() => {
-    // FIX: Per coding guidelines, only use API_KEY from environment variables.
-    if (process.env.API_KEY) {
-      try {
-        setGeminiService(createGeminiService(process.env.API_KEY));
-        setError(null); // Clear any previous errors on successful initialization
-      } catch (e: any) {
-        setError(`Failed to initialize AI Service: ${e.message}`);
-        setGeminiService(null);
-      }
+  const handleSettingsSave = (newName: string, newLogo: string | null) => {
+    setBrandName(newName);
+    localStorage.setItem('brand_name', newName);
+    if (newLogo) {
+      setBrandLogo(newLogo);
+      localStorage.setItem('brand_logo', newLogo);
     } else {
-      setGeminiService(null);
-      // FIX: Updated error message as settings-based API key is removed.
-      setError(API_KEY_ERROR_MESSAGE);
+      setBrandLogo(null);
+      localStorage.removeItem('brand_logo');
     }
-  }, []);
+    setIsSettingsOpen(false);
+  };
 
 
   const handleFileSelect = (file: File) => {
@@ -131,7 +119,7 @@ function App() {
   };
 
   const handleMap = (mapping: { name: string; email: string; prompt: string; }, templateId: string) => {
-    if (!csvFile || !geminiService) return;
+    if (!csvFile) return;
 
     setError(null);
     setAppState('generating');
@@ -225,11 +213,6 @@ function App() {
   };
 
   const handleDownloadAll = async () => {
-    if (!geminiService) {
-        setError("Cannot download, AI Service is not available.");
-        return;
-    }
-
     if (!isLoggedIn) {
       alert("Please log in or register to download your cards and unlock custom branding.");
       setAuthModal('login');
@@ -271,7 +254,7 @@ function App() {
   };
 
   const renderContent = () => {
-    const isDisabled = appState !== 'idle' || !geminiService || !isOnline;
+    const isDisabled = appState !== 'idle' || !isOnline;
     switch (appState) {
       case 'idle':
         return (
@@ -301,7 +284,7 @@ function App() {
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
               <h2 className="text-3xl font-bold text-white">Your Cards Are Ready!</h2>
               <div className="flex gap-2">
-                 <button onClick={handleDownloadAll} disabled={isBranding || !geminiService || !isOnline} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500">
+                 <button onClick={handleDownloadAll} disabled={isBranding || !isOnline} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500">
                   {isBranding ? <Loader/> : <><ZipIcon className="w-5 h-5" /> Download All (.zip)</>}
                 </button>
                 <button onClick={handleReset} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-gray-500 text-base font-medium rounded-md shadow-sm text-gray-200 bg-gray-700 hover:bg-gray-600">
@@ -347,7 +330,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white font-sans">
+    <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col">
       <header className="py-6 px-4 sm:px-6 lg:px-8 bg-gray-900/80 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-3xl font-bold tracking-tighter text-white">
@@ -362,30 +345,27 @@ function App() {
                   aria-label="Open branding settings"
                 >
                   <UserCircleIcon className="w-5 h-5" />
-                  Branding & Profile
+                  Settings
                 </button>
                 <button
                   onClick={() => setIsLoggedIn(false)}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-300 hover:bg-gray-700"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700"
                   aria-label="Log out"
                 >
                   <LogoutIcon className="w-5 h-5" />
-                  Logout
                 </button>
               </>
             ) : (
               <>
-                 <button
+                <button
                   onClick={() => setIsSettingsOpen(true)}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-200 bg-white/10 hover:bg-white/20"
-                  aria-label="Open branding settings"
+                  className="text-gray-300 hover:text-white transition-colors"
                 >
-                  <UserCircleIcon className="w-5 h-5" />
                   Settings
                 </button>
                 <button
                   onClick={() => setAuthModal('login')}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-200 bg-white/10 hover:bg-white/20"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-900 bg-white hover:bg-gray-200"
                   aria-label="Log in"
                 >
                   <LoginIcon className="w-5 h-5" />
@@ -394,7 +374,6 @@ function App() {
                 <button
                   onClick={() => setAuthModal('register')}
                   className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
-                  aria-label="Register"
                 >
                   Register
                 </button>
@@ -403,104 +382,73 @@ function App() {
           </div>
         </div>
       </header>
-      
-      <main className="py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {error === API_KEY_ERROR_MESSAGE && !geminiService ? (
-              <div className="flex flex-col items-center justify-center text-center py-16 px-6 bg-gray-800/50 rounded-lg border border-red-500/30">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <h2 className="text-2xl font-bold text-white mb-2">Application Configuration Error</h2>
-                <p className="max-w-lg text-gray-300 mb-6">
-                    This application cannot connect to the AI service. If you are the administrator, please ensure the Gemini API key is correctly configured in your deployment environment variables.
-                </p>
-                <div className="mt-2 bg-gray-900 p-4 rounded-lg border border-gray-700 text-left w-full max-w-lg">
-                    <p className="font-mono text-sm text-red-400 break-words">
-                        <strong className="font-bold text-red-300">Error Details:</strong> {error}
-                    </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                {!isOnline && (
-                    <div className="mb-8 bg-yellow-900/50 border border-yellow-500 text-yellow-300 px-4 py-3 rounded-lg text-center" role="status">
-                        <strong className="font-bold">You are currently offline. </strong>
-                        <span className="block sm:inline">Functionality is limited until you reconnect.</span>
-                    </div>
-                )}
-                <div className="flex justify-center border-b border-gray-700 mb-8">
-                    {Object.entries(TABS).map(([key, tab]) => (
-                        <button
-                            key={key}
-                            onClick={() => setActiveTab(key as 'csv' | 'single')}
-                            className={`px-4 py-3 text-lg font-medium transition-colors duration-200 ${
-                                activeTab === key
-                                    ? 'border-b-2 border-blue-500 text-blue-400'
-                                    : 'text-gray-400 hover:text-white'
-                            }`}
-                        >
-                            {tab.name}
-                        </button>
-                    ))}
-                </div>
 
-                {error && (
-                    <div className="mb-8 bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-center" role="alert">
-                        <strong className="font-bold">An Error Occurred: </strong>
-                        <span className="block sm:inline">{error}</span>
-                    </div>
-                )}
-              
-                {TABS[activeTab].content}
-              </>
-            )}
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {error && (
+          <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg mb-6 max-w-4xl mx-auto" role="alert">
+            <strong className="font-bold">An Error Occurred: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
+        <div className="max-w-7xl mx-auto">
+            <div className="mb-8 border-b border-gray-700">
+                <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                {Object.entries(TABS).map(([key, tab]) => (
+                    <button
+                    key={key}
+                    onClick={() => setActiveTab(key as 'csv' | 'single')}
+                    className={`
+                        whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg
+                        ${activeTab === key
+                            ? 'border-blue-500 text-blue-400'
+                            : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
+                        }
+                    `}
+                    >
+                    {tab.name}
+                    </button>
+                ))}
+                </nav>
+            </div>
+            {TABS[activeTab].content}
         </div>
       </main>
 
+      <footer className="text-center py-4 text-gray-500 text-sm">
+        <p>&copy; {new Date().getFullYear()} {brandingConfig.fullAppName}. All Rights Reserved.</p>
+        {!isOnline && <p className="text-yellow-400 font-bold mt-2">Offline Mode: Functionality is limited.</p>}
+      </footer>
+
       {editingCard && (
         <EditModal 
-            card={editingCard} 
-            onClose={() => setEditingCard(null)} 
-            onSave={handleEditSave}
-            geminiService={geminiService}
-            isOnline={isOnline}
+          card={editingCard} 
+          onClose={() => setEditingCard(null)} 
+          onSave={handleEditSave}
+          geminiService={geminiService}
+          isOnline={isOnline}
         />
       )}
-      
       {isSettingsOpen && (
-        <SettingsModal 
+        <SettingsModal
           initialName={brandName}
           initialLogo={brandLogo}
           onClose={() => setIsSettingsOpen(false)}
-          // FIX: Per coding guidelines, API key management is removed from settings.
-          onSave={(name, logo) => {
-            setBrandName(name);
-            setBrandLogo(logo);
-            setIsSettingsOpen(false);
-          }}
+          onSave={handleSettingsSave}
         />
       )}
-
       {authModal === 'login' && (
         <LoginModal 
             onClose={() => setAuthModal(null)}
             onSwitchToRegister={() => setAuthModal('register')}
-            onLoginSuccess={() => {
-                setIsLoggedIn(true);
-                setAuthModal(null);
-            }}
+            onLoginSuccess={() => { setIsLoggedIn(true); setAuthModal(null); }}
         />
       )}
-
       {authModal === 'register' && (
-        <RegisterModal 
+        <RegisterModal
             onClose={() => setAuthModal(null)}
             onSwitchToLogin={() => setAuthModal('login')}
-            onRegisterSuccess={() => {
-                setIsLoggedIn(true);
-                setAuthModal(null);
-            }}
+            onRegisterSuccess={() => { setIsLoggedIn(true); setAuthModal(null); }}
         />
       )}
     </div>

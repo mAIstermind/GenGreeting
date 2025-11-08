@@ -27,6 +27,11 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
     return;
   }
+  
+  // Do not cache API requests to our serverless function
+  if (event.request.url.includes('/api/gemini')) {
+      return;
+  }
 
   event.respondWith(
     caches.open(CACHE_NAME).then(cache => {
@@ -34,8 +39,7 @@ self.addEventListener('fetch', event => {
         // Return response from cache if found, or fetch from network
         const fetchPromise = fetch(event.request).then(networkResponse => {
           // If the request is successful, clone it and store in the cache.
-          // We must be careful not to cache API calls or non-web requests.
-          if (networkResponse && networkResponse.ok && event.request.url.startsWith('http') && !event.request.url.includes('generativelanguage.googleapis.com')) {
+          if (networkResponse && networkResponse.ok) {
             cache.put(event.request, networkResponse.clone());
           }
           return networkResponse;

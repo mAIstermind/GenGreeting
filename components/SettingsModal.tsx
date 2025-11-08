@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { CloseIcon } from './icons/CloseIcon.tsx';
 import { UploadIcon } from './icons/UploadIcon.tsx';
 
-// FIX: Per coding guidelines, API key management is removed.
 interface SettingsModalProps {
     initialName: string;
     initialLogo: string | null;
@@ -19,11 +18,9 @@ const fileToBase64 = (file: File): Promise<string> => {
     });
 };
 
-// FIX: Per coding guidelines, API key management is removed.
 export const SettingsModal: React.FC<SettingsModalProps> = ({ initialName, initialLogo, onClose, onSave }) => {
     const [name, setName] = useState(initialName);
     const [logo, setLogo] = useState(initialLogo);
-    // FIX: Per coding guidelines, API key state is removed.
     const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,7 +42,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ initialName, initi
     };
 
     const handleSave = () => {
-        // FIX: Per coding guidelines, API key is no longer managed here.
         onSave(name, logo);
     };
 
@@ -60,8 +56,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ initialName, initi
                 </div>
                 
                 <div className="p-6 space-y-6 overflow-y-auto">
-                    {/* FIX: Per coding guidelines, the API Key input section has been removed. */}
-
                     <div>
                         <label htmlFor="brand-name" className="block text-lg font-medium text-gray-700 dark:text-gray-300">
                             Your Name / Business Name
