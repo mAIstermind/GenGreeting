@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       // Expose environment variables to the client
-      'process.env.API_KEY': JSON.stringify(env.API_KEY)
+      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY)
     }
   }
 })

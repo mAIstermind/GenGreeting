@@ -20,6 +20,7 @@ import { createGeminiService, type GeminiService } from './services/geminiServic
 import type { Contact, GeneratedCard } from './types.ts';
 import { ImageGenerator } from './components/ImageGenerator.tsx';
 import type { BrandingConfig } from './branding.ts';
+import { promptTemplates } from './promptTemplates.ts';
 
 type AppState = 'idle' | 'mapping' | 'generating' | 'done';
 type AuthModalState = 'login' | 'register' | null;
@@ -40,6 +41,7 @@ function App() {
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
   const [isBranding, setIsBranding] = useState(false);
   const [activeTab, setActiveTab] = useState<'csv' | 'single'>('csv');
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   // --- API Key & Service State ---
   // FIX: Per coding guidelines, API key UI and local storage are removed. The key is only read from process.env.
@@ -71,6 +73,20 @@ function App() {
         setBrandingConfig(fallbackConfig);
         document.title = `${fallbackConfig.fullAppName} - AI Card Generator`;
     }
+  }, []);
+  
+  // Effect to handle online/offline status for PWA functionality
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   // Effect to initialize the Gemini service
@@ -113,7 +129,7 @@ function App() {
     });
   };
 
-  const handleMap = (mapping: { name: string; email: string; prompt: string; }, theme: string) => {
+  const handleMap = (mapping: { name: string; email: string; prompt: string; }, templateId: string) => {
     if (!csvFile || !geminiService) return;
 
     setError(null);
@@ -145,18 +161,26 @@ function App() {
           return;
         }
 
+        const selectedTemplate = promptTemplates.find(t => t.id === templateId);
+        if (!selectedTemplate) {
+            setError("The selected image style template could not be found.");
+            setAppState('idle');
+            return;
+        }
+
         const newCards: GeneratedCard[] = [];
         for (let i = 0; i < parsedContacts.length; i++) {
           try {
             const contact = parsedContacts[i];
             
-            let finalTheme = theme;
+            const firstName = contact.name.split(' ')[0];
+            let imagePrompt = selectedTemplate.template.replace(/\${firstName}/g, firstName);
+
             if (contact.customPromptDetail) {
-              finalTheme += ` (${contact.customPromptDetail})`;
+                imagePrompt += ` Also incorporate this specific detail: "${contact.customPromptDetail}".`;
             }
 
-            const imageConcept = await geminiService.generatePromptConcept(contact.name, finalTheme);
-            const imageUrl = await geminiService.generateGreetingCardImage(contact.name.split(' ')[0], imageConcept);
+            const imageUrl = await geminiService.generateGreetingCardImage(imagePrompt);
             
             const newCard: GeneratedCard = { ...contact, imageUrl };
             newCards.push(newCard);
@@ -246,7 +270,7 @@ function App() {
   };
 
   const renderContent = () => {
-    const isDisabled = appState !== 'idle' || !geminiService;
+    const isDisabled = appState !== 'idle' || !geminiService || !isOnline;
     switch (appState) {
       case 'idle':
         return (
@@ -276,7 +300,7 @@ function App() {
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
               <h2 className="text-3xl font-bold text-white">Your Cards Are Ready!</h2>
               <div className="flex gap-2">
-                 <button onClick={handleDownloadAll} disabled={isBranding || !geminiService} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500">
+                 <button onClick={handleDownloadAll} disabled={isBranding || !geminiService || !isOnline} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500">
                   {isBranding ? <Loader/> : <><ZipIcon className="w-5 h-5" /> Download All (.zip)</>}
                 </button>
                 <button onClick={handleReset} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-gray-500 text-base font-medium rounded-md shadow-sm text-gray-200 bg-gray-700 hover:bg-gray-600">
@@ -305,7 +329,7 @@ function App() {
     },
     single: {
       name: 'Generate with Imagen',
-      content: <ImageGenerator geminiService={geminiService} />,
+      content: <ImageGenerator geminiService={geminiService} isOnline={isOnline} />,
     }
   };
 
@@ -381,6 +405,12 @@ function App() {
       
       <main className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {!isOnline && (
+                <div className="mb-8 bg-yellow-900/50 border border-yellow-500 text-yellow-300 px-4 py-3 rounded-lg text-center" role="status">
+                    <strong className="font-bold">You are currently offline. </strong>
+                    <span className="block sm:inline">Functionality is limited until you reconnect.</span>
+                </div>
+            )}
             <div className="flex justify-center border-b border-gray-700 mb-8">
                 {Object.entries(TABS).map(([key, tab]) => (
                     <button
@@ -414,6 +444,7 @@ function App() {
             onClose={() => setEditingCard(null)} 
             onSave={handleEditSave}
             geminiService={geminiService}
+            isOnline={isOnline}
         />
       )}
       

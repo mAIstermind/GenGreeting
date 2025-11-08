@@ -4,9 +4,10 @@ import { SparklesIcon } from './icons/SparklesIcon.tsx';
 
 interface ImageGeneratorProps {
     geminiService: GeminiService | null;
+    isOnline: boolean;
 }
 
-export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService }) => {
+export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService, isOnline }) => {
     const [prompt, setPrompt] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -15,6 +16,11 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService })
     const handleGenerate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!prompt.trim() || !geminiService) return;
+
+        if (!isOnline) {
+            setError("You are offline. Please reconnect to generate images.");
+            return;
+        }
 
         setIsLoading(true);
         setError(null);
@@ -30,7 +36,7 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService })
         }
     };
     
-    const canGenerate = geminiService && !isLoading && !!prompt.trim();
+    const canGenerate = geminiService && !isLoading && !!prompt.trim() && isOnline;
 
     return (
         <div className="w-full max-w-4xl mx-auto">
@@ -47,7 +53,7 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService })
                             onChange={(e) => setPrompt(e.target.value)}
                             placeholder="e.g., 'A robot holding a red skateboard'"
                             className="flex-grow w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-3 px-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            disabled={isLoading || !geminiService}
+                            disabled={isLoading || !geminiService || !isOnline}
                         />
                         <button
                             type="submit"
@@ -74,7 +80,7 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService })
                     </div>
                 )}
                 {error && (
-                    <div className="text-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
+                    <div className="text-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg dark:bg-red-900/50 dark:border-red-500 dark:text-red-300" role="alert">
                         <strong className="font-bold">Generation Failed: </strong>
                         <span className="block sm:inline">{error}</span>
                     </div>

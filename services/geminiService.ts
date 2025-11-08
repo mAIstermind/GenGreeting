@@ -14,28 +14,31 @@ export const createGeminiService = (apiKey: string) => {
         throw new Error("An API key must be provided to initialize the Gemini service.");
     }
     const ai = new GoogleGenAI({ apiKey });
-
-    const generatePromptConcept = async (name: string, theme: string): Promise<string> => {
+    
+    const generatePromptConcept = async (theme: string, contactName: string): Promise<string> => {
         try {
-            const systemInstruction = "You are a creative assistant that writes concise, visually descriptive prompts for an AI image generator. The prompts should be imaginative, detailed, and describe a complete scene. Do not add any conversational text, quotes, or asterisks around your response. Just provide the prompt.";
-            const userPrompt = `Generate a short, creative, visually descriptive image prompt for a greeting card. The card is for a person named "${name.split(' ')[0]}". The desired theme is "${theme}". The final image will have their name added to it separately, so you only need to describe the visual elements of the scene. Be imaginative. For example, for a 'Birthday' theme, a good prompt could be 'A vibrant explosion of confetti and balloons in pastel colors, with a delicious-looking slice of cake in the center.'`;
+            const systemInstruction = `You are a creative assistant. Your task is to generate a detailed and imaginative prompt for an AI image generator. The prompt should be based on a theme provided by the user and personalized with the recipient's first name. The goal is to create a visually stunning and unique greeting card image. Only return the prompt text itself, without any introductory phrases.`;
+            
+            const userPrompt = `Theme: "${theme}"\nRecipient's First Name: ${contactName.split(' ')[0]}`;
 
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: userPrompt,
-                config: { systemInstruction },
+                config: {
+                    systemInstruction: systemInstruction,
+                }
             });
+
             return response.text.trim();
+
         } catch (error) {
             console.error("Error generating prompt concept:", error);
-            throw new Error("Failed to generate a creative prompt concept.");
+            throw new Error("Failed to generate a creative prompt. The API may be busy.");
         }
     };
-    
-    const generateGreetingCardImage = async (firstName: string, imageConcept: string): Promise<string> => {
-        try {
-            const prompt = `${imageConcept}. The name "${firstName}" should be incorporated into the image in an elegant and natural way, like on a banner, a tag, or written in the scene.`;
 
+    const generateGreetingCardImage = async (prompt: string): Promise<string> => {
+        try {
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash-image',
                 contents: {

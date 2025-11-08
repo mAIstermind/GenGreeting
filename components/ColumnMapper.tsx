@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { CheckIcon } from './icons/CheckIcon.tsx';
+import { promptTemplates, defaultPromptTemplate } from '../promptTemplates.ts';
 
 interface ColumnMapperProps {
   headers: string[];
-  onMap: (mapping: { name: string; email: string; prompt: string }, theme: string) => void;
+  onMap: (mapping: { name: string; email: string; prompt: string }, templateId: string) => void;
   onCancel: () => void;
   fileName: string;
 }
@@ -12,7 +13,7 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
   const [nameColumn, setNameColumn] = useState('');
   const [emailColumn, setEmailColumn] = useState('');
   const [promptColumn, setPromptColumn] = useState('');
-  const [theme, setTheme] = useState<string>('A festive holiday card with twinkling lights and holly.');
+  const [templateId, setTemplateId] = useState(defaultPromptTemplate.id);
 
   useEffect(() => {
     // Auto-detect columns based on common names
@@ -28,7 +29,7 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isMappingValid) {
-      onMap({ name: nameColumn, email: emailColumn, prompt: promptColumn }, theme);
+      onMap({ name: nameColumn, email: emailColumn, prompt: promptColumn }, templateId);
     }
   };
 
@@ -37,7 +38,9 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
   const emailAndPromptSame = emailColumn && promptColumn && emailColumn === promptColumn;
   const hasMappingConflict = nameAndEmailSame || nameAndPromptSame || emailAndPromptSame;
 
-  const isMappingValid = nameColumn && emailColumn && theme.trim() !== '' && !hasMappingConflict;
+  const isMappingValid = nameColumn && emailColumn && templateId && !hasMappingConflict;
+
+  const selectedTemplateText = promptTemplates.find(t => t.id === templateId)?.template.replace(/\${firstName}/g, '[Recipient Name]') || '';
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
@@ -88,8 +91,8 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <label htmlFor="prompt-column" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
-                    Prompt Customization <span className="text-base font-normal">(Optional)</span>
-                    <span className="block text-sm text-gray-500 dark:text-gray-400">Add per-row text to the main prompt</span>
+                    Theme Customization <span className="text-base font-normal">(Optional)</span>
+                    <span className="block text-sm text-gray-500 dark:text-gray-400">Add per-row text to the main theme</span>
                 </label>
                 <select
                     id="prompt-column"
@@ -112,23 +115,23 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
         <div className="border-t border-gray-200 dark:border-gray-700"></div>
 
         <fieldset>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Describe the Image Theme</h2>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Select Image Style</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Enter a theme or style for the card images. The AI will generate a unique, creative prompt for each person based on this theme.
+              Choose a creative style for the AI to use. This style will be applied to every person in your list.
             </p>
-
-            <textarea
-                value={theme}
-                onChange={(e) => setTheme(e.target.value)}
-                placeholder="e.g., A watercolor painting of a winter wonderland"
-                className="w-full h-28 p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors text-base"
-            />
-             <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h4 className="font-semibold text-sm text-gray-800 dark:text-gray-200">How it Works</h4>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 italic">
-                  Based on your theme, the AI might generate a creative concept for a contact named "Alex" like: "A cozy fireplace scene with a stocking that has 'Alex' stitched on it, with a warm, glowing light."
-                </p>
-            </div>
+             <select
+                id="template"
+                value={templateId}
+                onChange={(e) => setTemplateId(e.target.value)}
+                className="w-full p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors text-base"
+             >
+                {promptTemplates.map(template => (
+                    <option key={template.id} value={template.id}>{template.name}</option>
+                ))}
+            </select>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
+                Prompt Preview: "{selectedTemplateText}"
+            </p>
         </fieldset>
 
 

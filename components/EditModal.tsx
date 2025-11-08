@@ -9,9 +9,10 @@ interface EditModalProps {
     onClose: () => void;
     onSave: (updatedCard: GeneratedCard) => void;
     geminiService: GeminiService | null;
+    isOnline: boolean;
 }
 
-export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave, geminiService }) => {
+export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave, geminiService, isOnline }) => {
     const [editPrompt, setEditPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,10 @@ export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave, gem
     const handleEdit = async () => {
         if (!geminiService) {
             setError("API service is not available.");
+            return;
+        }
+        if (!isOnline) {
+            setError("You are offline. Please reconnect to edit images.");
             return;
         }
         if (!editPrompt.trim()) {
@@ -55,7 +60,7 @@ export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave, gem
         }
     };
 
-    const canEdit = geminiService && !isEditing && !!editPrompt;
+    const canEdit = geminiService && !isEditing && !!editPrompt.trim() && isOnline;
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" aria-modal="true" role="dialog">
@@ -91,7 +96,7 @@ export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave, gem
                             onChange={(e) => setEditPrompt(e.target.value)}
                             placeholder="e.g., 'Add a retro filter' or 'Make the background blue'"
                             className="w-full h-24 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                            disabled={isEditing || !geminiService}
+                            disabled={isEditing || !geminiService || !isOnline}
                         />
 
                         {error && <p className="text-red-500 text-sm">{error}</p>}
