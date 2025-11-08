@@ -1,15 +1,4 @@
-
 import { GoogleGenAI, Modality, Part } from "@google/genai";
-
-const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-  // This is a placeholder for environments where the key might not be set.
-  // In a real production scenario, this should be handled more gracefully.
-  console.warn("API_KEY environment variable not set. Please set your API key.");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
 
 const dataUrlToPart = (dataUrl: string): Part => {
     const mimeType = dataUrl.substring(dataUrl.indexOf(':') + 1, dataUrl.indexOf(';'));
@@ -20,131 +9,146 @@ const dataUrlToPart = (dataUrl: string): Part => {
     return { inlineData: { data, mimeType } };
 };
 
-export const generateGreetingCardImage = async (firstName: string, promptTemplate: string): Promise<string> => {
-    try {
-        const prompt = promptTemplate.replace(/\${firstName}/g, firstName);
+export const createGeminiService = (apiKey: string) => {
+    if (!apiKey) {
+        throw new Error("An API key must be provided to initialize the Gemini service.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: {
-                parts: [
-                    { text: prompt },
-                ],
-            },
-            config: {
-                responseModalities: [Modality.IMAGE],
-            },
-        });
-        
-        for (const part of response.candidates[0].content.parts) {
-            if (part.inlineData) {
-                const base64ImageBytes: string = part.inlineData.data;
-                return `data:${part.inlineData.mimeType};base64,${base64ImageBytes}`;
+    const generateGreetingCardImage = async (firstName: string, promptTemplate: string): Promise<string> => {
+        try {
+            const prompt = promptTemplate.replace(/\${firstName}/g, firstName);
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash-image',
+                contents: {
+                    parts: [
+                        { text: prompt },
+                    ],
+                },
+                config: {
+                    responseModalities: [Modality.IMAGE],
+                },
+            });
+            
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    const base64ImageBytes: string = part.inlineData.data;
+                    return `data:${part.inlineData.mimeType};base64,${base64ImageBytes}`;
+                }
             }
+            
+            throw new Error("No image data found in the API response.");
+
+        } catch (error) {
+            console.error("Error generating greeting card image:", error);
+            throw new Error("Failed to generate image. The API may be busy or an error occurred.");
         }
-        
-        throw new Error("No image data found in the API response.");
+    };
 
-    } catch (error) {
-        console.error("Error generating greeting card image:", error);
-        throw new Error("Failed to generate image. The API may be busy or an error occurred.");
-    }
-};
+    const editGreetingCardImage = async (base64ImageData: string, prompt: string): Promise<string> => {
+        try {
+            const imagePart = dataUrlToPart(base64ImageData);
+            
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash-image',
+                contents: {
+                    parts: [
+                        imagePart,
+                        { text: prompt },
+                    ],
+                },
+                config: {
+                    responseModalities: [Modality.IMAGE],
+                },
+            });
 
-
-export const editGreetingCardImage = async (base64ImageData: string, prompt: string): Promise<string> => {
-    try {
-        const imagePart = dataUrlToPart(base64ImageData);
-        
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: {
-                parts: [
-                    imagePart,
-                    { text: prompt },
-                ],
-            },
-            config: {
-                responseModalities: [Modality.IMAGE],
-            },
-        });
-
-        for (const part of response.candidates[0].content.parts) {
-            if (part.inlineData) {
-                const base64ImageBytes: string = part.inlineData.data;
-                return `data:${part.inlineData.mimeType};base64,${base64ImageBytes}`;
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    const base64ImageBytes: string = part.inlineData.data;
+                    return `data:${part.inlineData.mimeType};base64,${base64ImageBytes}`;
+                }
             }
+            
+            throw new Error("No edited image data found in the API response.");
+
+        } catch (error) {
+            console.error("Error editing image:", error);
+            throw new Error("Failed to edit image.");
         }
-        
-        throw new Error("No edited image data found in the API response.");
+    };
 
-    } catch (error) {
-        console.error("Error editing image:", error);
-        throw new Error("Failed to edit image.");
-    }
-};
+    const brandCardImage = async (
+        cardDataUrl: string, 
+        logoDataUrl: string | null, 
+        brandText: string, 
+        position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+    ): Promise<string> => {
+        try {
+            if (!logoDataUrl && !brandText) return cardDataUrl; // No branding to add
 
-export const brandCardImage = async (
-    cardDataUrl: string, 
-    logoDataUrl: string | null, 
-    brandText: string, 
-    position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
-): Promise<string> => {
-    try {
-        if (!logoDataUrl && !brandText) return cardDataUrl; // No branding to add
-
-        const parts: Part[] = [dataUrlToPart(cardDataUrl)];
-        
-        if (logoDataUrl) {
-            parts.push(dataUrlToPart(logoDataUrl));
-        }
-
-        const positionText = position.replace('-', ' ');
-        let prompt = `Take the main image. In the ${positionText} corner, subtly and professionally place the small logo provided.`;
-        if (brandText) {
-            prompt += ` Neatly next to or below the logo, add the text: "${brandText}".`
-        }
-        prompt += ' The branding should be small, clean, and not overpower the main image. It should look like a professional watermark or signature.';
-        parts.push({ text: prompt });
-
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: { parts },
-            config: {
-                responseModalities: [Modality.IMAGE],
-            },
-        });
-
-        for (const part of response.candidates[0].content.parts) {
-            if (part.inlineData) {
-                const base64ImageBytes: string = part.inlineData.data;
-                return `data:${part.inlineData.mimeType};base64,${base64ImageBytes}`;
+            const parts: Part[] = [dataUrlToPart(cardDataUrl)];
+            
+            if (logoDataUrl) {
+                parts.push(dataUrlToPart(logoDataUrl));
             }
+
+            const positionText = position.replace('-', ' ');
+            let prompt = `Take the main image. In the ${positionText} corner, subtly and professionally place the small logo provided.`;
+            if (brandText) {
+                prompt += ` Neatly next to or below the logo, add the text: "${brandText}".`
+            }
+            prompt += ' The branding should be small, clean, and not overpower the main image. It should look like a professional watermark or signature.';
+            parts.push({ text: prompt });
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash-image',
+                contents: { parts },
+                config: {
+                    responseModalities: [Modality.IMAGE],
+                },
+            });
+
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    const base64ImageBytes: string = part.inlineData.data;
+                    return `data:${part.inlineData.mimeType};base64,${base64ImageBytes}`;
+                }
+            }
+            
+            throw new Error("No branded image data found in the API response.");
+        } catch (error) {
+            console.error("Error branding image:", error);
+            throw new Error("Failed to add branding to the image.");
         }
-        
-        throw new Error("No branded image data found in the API response.");
-    } catch (error) {
-        console.error("Error branding image:", error);
-        throw new Error("Failed to add branding to the image.");
-    }
+    };
+
+    const generateImageWithImagen = async (prompt: string): Promise<string> => {
+        try {
+            const response = await ai.models.generateImages({
+                model: 'imagen-4.0-generate-001',
+                prompt: prompt,
+                config: {
+                  numberOfImages: 1,
+                  outputMimeType: 'image/png',
+                  aspectRatio: '1:1',
+                },
+            });
+            
+            const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
+            return `data:image/png;base64,${base64ImageBytes}`;
+        } catch (error) {
+            console.error("Error generating with Imagen:", error);
+            throw new Error("Failed to generate image with Imagen.");
+        }
+    };
+
+    return {
+        generateGreetingCardImage,
+        editGreetingCardImage,
+        brandCardImage,
+        generateImageWithImagen,
+    };
 };
 
-export const generateImageWithImagen = async (prompt: string): Promise<string> => {
-    try {
-        const response = await ai.models.generateImages({
-            model: 'imagen-4.0-generate-001',
-            prompt: prompt,
-            config: {
-              numberOfImages: 1,
-              outputMimeType: 'image/png',
-              aspectRatio: '1:1',
-            },
-        });
-        
-        const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
-        return `data:image/png;base64,${base64ImageBytes}`;
-    } catch (error) {
-        console.error("Error generating with Imagen:", error);
-        throw new Error("Failed to generate image with Imagen.");
-    }
-};
+export type GeminiService = ReturnType<typeof createGeminiService>;

@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { generateImageWithImagen } from '../services/geminiService';
-import { SparklesIcon } from './icons/SparklesIcon';
+import type { GeminiService } from '../services/geminiService.ts';
+import { SparklesIcon } from './icons/SparklesIcon.tsx';
 
-export const ImageGenerator: React.FC = () => {
+interface ImageGeneratorProps {
+    geminiService: GeminiService | null;
+}
+
+export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService }) => {
     const [prompt, setPrompt] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -10,14 +14,14 @@ export const ImageGenerator: React.FC = () => {
 
     const handleGenerate = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!prompt.trim()) return;
+        if (!prompt.trim() || !geminiService) return;
 
         setIsLoading(true);
         setError(null);
         setImageUrl(null);
 
         try {
-            const result = await generateImageWithImagen(prompt);
+            const result = await geminiService.generateImageWithImagen(prompt);
             setImageUrl(result);
         } catch (e: any) {
             setError(e.message || 'An unexpected error occurred.');
@@ -25,6 +29,8 @@ export const ImageGenerator: React.FC = () => {
             setIsLoading(false);
         }
     };
+    
+    const canGenerate = geminiService && !isLoading && !!prompt.trim();
 
     return (
         <div className="w-full max-w-4xl mx-auto">
@@ -41,11 +47,11 @@ export const ImageGenerator: React.FC = () => {
                             onChange={(e) => setPrompt(e.target.value)}
                             placeholder="e.g., 'A robot holding a red skateboard'"
                             className="flex-grow w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-3 px-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            disabled={isLoading}
+                            disabled={isLoading || !geminiService}
                         />
                         <button
                             type="submit"
-                            disabled={isLoading || !prompt.trim()}
+                            disabled={!canGenerate}
                             className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200"
                         >
                             <SparklesIcon className="h-5 w-5 mr-2 -ml-1" />

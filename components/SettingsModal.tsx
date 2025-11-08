@@ -1,8 +1,8 @@
-
 import React, { useState, useRef } from 'react';
-import { CloseIcon } from './icons/CloseIcon';
-import { UploadIcon } from './icons/UploadIcon';
+import { CloseIcon } from './icons/CloseIcon.tsx';
+import { UploadIcon } from './icons/UploadIcon.tsx';
 
+// FIX: Per coding guidelines, API key management is removed.
 interface SettingsModalProps {
     initialName: string;
     initialLogo: string | null;
@@ -19,9 +19,11 @@ const fileToBase64 = (file: File): Promise<string> => {
     });
 };
 
+// FIX: Per coding guidelines, API key management is removed.
 export const SettingsModal: React.FC<SettingsModalProps> = ({ initialName, initialLogo, onClose, onSave }) => {
     const [name, setName] = useState(initialName);
     const [logo, setLogo] = useState(initialLogo);
+    // FIX: Per coding guidelines, API key state is removed.
     const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,6 +45,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ initialName, initi
     };
 
     const handleSave = () => {
+        // FIX: Per coding guidelines, API key is no longer managed here.
         onSave(name, logo);
     };
 
@@ -50,13 +53,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ initialName, initi
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" aria-modal="true" role="dialog">
             <div className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
                 <div className="p-6 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Branding & Profile</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Branding &amp; Profile</h2>
                     <button onClick={onClose} className="text-gray-500 hover:text-gray-800 dark:hover:text-white transition-colors" aria-label="Close settings modal">
                         <CloseIcon className="w-7 h-7"/>
                     </button>
                 </div>
                 
                 <div className="p-6 space-y-6 overflow-y-auto">
+                    {/* FIX: Per coding guidelines, the API Key input section has been removed. */}
+
                     <div>
                         <label htmlFor="brand-name" className="block text-lg font-medium text-gray-700 dark:text-gray-300">
                             Your Name / Business Name

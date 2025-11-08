@@ -16,9 +16,8 @@ import { ZipIcon } from './components/icons/ZipIcon.tsx';
 import { UserCircleIcon } from './components/icons/UserCircleIcon.tsx';
 import { LoginIcon } from './components/icons/LoginIcon.tsx';
 import { LogoutIcon } from './components/icons/LogoutIcon.tsx';
-import { generateGreetingCardImage, brandCardImage } from './services/geminiService.ts';
+import { createGeminiService, type GeminiService } from './services/geminiService.ts';
 import type { Contact, GeneratedCard } from './types.ts';
-import type { PromptTemplate } from './promptTemplates.ts';
 import { ImageGenerator } from './components/ImageGenerator.tsx';
 import type { BrandingConfig } from './branding.ts';
 
@@ -41,6 +40,10 @@ function App() {
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
   const [isBranding, setIsBranding] = useState(false);
   const [activeTab, setActiveTab] = useState<'csv' | 'single'>('csv');
+
+  // --- API Key & Service State ---
+  // FIX: Per coding guidelines, API key UI and local storage are removed. The key is only read from process.env.
+  const [geminiService, setGeminiService] = useState<GeminiService | null>(null);
 
   // --- Auth State ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -70,6 +73,25 @@ function App() {
     }
   }, []);
 
+  // Effect to initialize the Gemini service
+  useEffect(() => {
+    // FIX: Per coding guidelines, only use API_KEY from environment variables.
+    if (process.env.API_KEY) {
+      try {
+        setGeminiService(createGeminiService(process.env.API_KEY));
+        setError(null); // Clear any previous errors on successful initialization
+      } catch (e: any) {
+        setError(`Failed to initialize AI Service: ${e.message}`);
+        setGeminiService(null);
+      }
+    } else {
+      setGeminiService(null);
+      // FIX: Updated error message as settings-based API key is removed.
+      setError("A Gemini API key is not configured. The application cannot function without it.");
+    }
+  }, []);
+
+
   const handleFileSelect = (file: File) => {
     setError(null);
     setCsvFile(file);
@@ -91,8 +113,8 @@ function App() {
     });
   };
 
-  const handleMap = (mapping: { name: string; email: string }, template: PromptTemplate) => {
-    if (!csvFile) return;
+  const handleMap = (mapping: { name: string; email: string; prompt: string; }, customPrompt: string) => {
+    if (!csvFile || !geminiService) return;
 
     setError(null);
     setAppState('generating');
@@ -103,9 +125,10 @@ function App() {
       header: true,
       skipEmptyLines: true,
       complete: async (results: any) => {
-        let parsedContacts = results.data.map((row: any) => ({
+        let parsedContacts: Contact[] = results.data.map((row: any) => ({
           name: row[mapping.name] || '',
           email: row[mapping.email] || '',
+          customPromptDetail: mapping.prompt ? row[mapping.prompt] || '' : '',
         })).filter((c: Contact) => c.name && c.email);
         
         if (!isLoggedIn && parsedContacts.length > (TRIAL_LIMIT - cardsGeneratedInTrial)) {
@@ -126,7 +149,13 @@ function App() {
         for (let i = 0; i < parsedContacts.length; i++) {
           try {
             const contact = parsedContacts[i];
-            const imageUrl = await generateGreetingCardImage(contact.name.split(' ')[0], template.template);
+            
+            let finalPrompt = customPrompt;
+            if (contact.customPromptDetail) {
+              finalPrompt += ` ${contact.customPromptDetail}`;
+            }
+
+            const imageUrl = await geminiService.generateGreetingCardImage(contact.name.split(' ')[0], finalPrompt);
             const newCard: GeneratedCard = { ...contact, imageUrl };
             newCards.push(newCard);
             setGeneratedCards([...newCards]);
@@ -169,6 +198,11 @@ function App() {
   };
 
   const handleDownloadAll = async () => {
+    if (!geminiService) {
+        setError("Cannot download, AI Service is not available.");
+        return;
+    }
+
     if (!isLoggedIn) {
       alert("Please log in or register to download your cards and unlock custom branding.");
       setAuthModal('login');
@@ -184,7 +218,7 @@ function App() {
     if (brandName || brandLogo) {
       for (let i = 0; i < cardsToZip.length; i++) {
           try {
-            const brandedImageUrl = await brandCardImage(cardsToZip[i].imageUrl, brandLogo, brandName, 'bottom-right');
+            const brandedImageUrl = await geminiService.brandCardImage(cardsToZip[i].imageUrl, brandLogo, brandName, 'bottom-right');
             cardsToZip[i] = { ...cardsToZip[i], imageUrl: brandedImageUrl };
           } catch (e) {
             console.error("Failed to brand image for", cardsToZip[i].name);
@@ -210,11 +244,12 @@ function App() {
   };
 
   const renderContent = () => {
+    const isDisabled = appState !== 'idle' || !geminiService;
     switch (appState) {
       case 'idle':
         return (
           <>
-            <FileUpload onFileSelect={handleFileSelect} disabled={appState !== 'idle'} />
+            <FileUpload onFileSelect={handleFileSelect} disabled={isDisabled} />
             {!isLoggedIn && (
                 <p className="text-center text-gray-400 mt-4">
                     You have {TRIAL_LIMIT - cardsGeneratedInTrial} free generations remaining.
@@ -239,7 +274,7 @@ function App() {
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
               <h2 className="text-3xl font-bold text-white">Your Cards Are Ready!</h2>
               <div className="flex gap-2">
-                 <button onClick={handleDownloadAll} disabled={isBranding} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500">
+                 <button onClick={handleDownloadAll} disabled={isBranding || !geminiService} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500">
                   {isBranding ? <Loader/> : <><ZipIcon className="w-5 h-5" /> Download All (.zip)</>}
                 </button>
                 <button onClick={handleReset} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-gray-500 text-base font-medium rounded-md shadow-sm text-gray-200 bg-gray-700 hover:bg-gray-600">
@@ -268,7 +303,7 @@ function App() {
     },
     single: {
       name: 'Generate with Imagen',
-      content: <ImageGenerator />,
+      content: <ImageGenerator geminiService={geminiService} />,
     }
   };
 
@@ -300,7 +335,7 @@ function App() {
                   aria-label="Open branding settings"
                 >
                   <UserCircleIcon className="w-5 h-5" />
-                  Branding
+                  Branding & Profile
                 </button>
                 <button
                   onClick={() => setIsLoggedIn(false)}
@@ -313,6 +348,14 @@ function App() {
               </>
             ) : (
               <>
+                 <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-200 bg-white/10 hover:bg-white/20"
+                  aria-label="Open branding settings"
+                >
+                  <UserCircleIcon className="w-5 h-5" />
+                  Settings
+                </button>
                 <button
                   onClick={() => setAuthModal('login')}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-200 bg-white/10 hover:bg-white/20"
@@ -367,7 +410,8 @@ function App() {
         <EditModal 
             card={editingCard} 
             onClose={() => setEditingCard(null)} 
-            onSave={handleEditSave} 
+            onSave={handleEditSave}
+            geminiService={geminiService}
         />
       )}
       
@@ -376,6 +420,7 @@ function App() {
           initialName={brandName}
           initialLogo={brandLogo}
           onClose={() => setIsSettingsOpen(false)}
+          // FIX: Per coding guidelines, API key management is removed from settings.
           onSave={(name, logo) => {
             setBrandName(name);
             setBrandLogo(logo);

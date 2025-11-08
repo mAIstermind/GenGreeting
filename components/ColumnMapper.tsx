@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { CheckIcon } from './icons/CheckIcon';
-import type { PromptTemplate } from '../promptTemplates';
-import { promptTemplates, defaultPromptTemplate } from '../promptTemplates';
+import { CheckIcon } from './icons/CheckIcon.tsx';
+import { promptTemplates, defaultPromptTemplate } from '../promptTemplates.ts';
 
 
 interface ColumnMapperProps {
   headers: string[];
-  onMap: (mapping: { name: string; email: string }, template: PromptTemplate) => void;
+  onMap: (mapping: { name: string; email: string; prompt: string }, prompt: string) => void;
   onCancel: () => void;
   fileName: string;
 }
@@ -14,25 +13,33 @@ interface ColumnMapperProps {
 export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCancel, fileName }) => {
   const [nameColumn, setNameColumn] = useState('');
   const [emailColumn, setEmailColumn] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate>(defaultPromptTemplate);
+  const [promptColumn, setPromptColumn] = useState('');
+  const [customPrompt, setCustomPrompt] = useState<string>(defaultPromptTemplate.template);
 
   useEffect(() => {
     // Auto-detect columns based on common names
     const nameGuess = headers.find(h => h.toLowerCase().includes('name'));
     const emailGuess = headers.find(h => ['email', 'e-mail'].includes(h.toLowerCase()));
+    const promptGuess = headers.find(h => h.toLowerCase().includes('prompt') || h.toLowerCase().includes('custom'));
 
     if (nameGuess) setNameColumn(nameGuess);
     if (emailGuess) setEmailColumn(emailGuess);
+    if (promptGuess) setPromptColumn(promptGuess);
   }, [headers]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (nameColumn && emailColumn) {
-      onMap({ name: nameColumn, email: emailColumn }, selectedTemplate);
+    if (isMappingValid) {
+      onMap({ name: nameColumn, email: emailColumn, prompt: promptColumn }, customPrompt);
     }
   };
 
-  const isMappingValid = nameColumn && emailColumn && nameColumn !== emailColumn;
+  const nameAndEmailSame = nameColumn && emailColumn && nameColumn === emailColumn;
+  const nameAndPromptSame = nameColumn && promptColumn && nameColumn === promptColumn;
+  const emailAndPromptSame = emailColumn && promptColumn && emailColumn === promptColumn;
+  const hasMappingConflict = nameAndEmailSame || nameAndPromptSame || emailAndPromptSame;
+
+  const isMappingValid = nameColumn && emailColumn && customPrompt.trim() !== '' && !hasMappingConflict;
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
@@ -81,41 +88,65 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
             </select>
             </div>
 
-            {nameColumn && emailColumn && nameColumn === emailColumn && (
-              <p className="text-red-500 text-sm text-center">Name and Email columns cannot be the same.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <label htmlFor="prompt-column" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
+                    Prompt Customization <span className="text-base font-normal">(Optional)</span>
+                    <span className="block text-sm text-gray-500 dark:text-gray-400">Add per-row text to the main prompt</span>
+                </label>
+                <select
+                    id="prompt-column"
+                    value={promptColumn}
+                    onChange={(e) => setPromptColumn(e.target.value)}
+                    className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                    <option value="">Do not customize</option>
+                    {headers.map(header => (
+                    <option key={header} value={header}>{header}</option>
+                    ))}
+                </select>
+            </div>
+
+            {hasMappingConflict && (
+              <p className="text-red-500 text-sm text-center">Name, Email, and Prompt columns must be unique.</p>
             )}
         </fieldset>
 
         <div className="border-t border-gray-200 dark:border-gray-700"></div>
 
         <fieldset>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Confirm Your Prompt</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">Choose a template for your greeting cards.</p>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Write Your Custom Prompt</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Enter your prompt for the card images. Use <code className="bg-gray-200 dark:bg-gray-900 px-1 py-0.5 rounded-md text-sm font-mono text-blue-500">${'{firstName}'}</code> to insert the contact's first name.
+            </p>
 
+            <textarea
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                placeholder="e.g., An elegant holiday card for ${firstName} with snowflakes and stars."
+                className="w-full h-28 p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors text-base"
+            />
+             <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h4 className="font-semibold text-sm text-gray-800 dark:text-gray-200">Prompt Preview</h4>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 italic">
+                  "{customPrompt.replace(/\${firstName}/g, '{name}')}"
+                </p>
+            </div>
+
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mt-6 mb-3">Or, start with a template:</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {promptTemplates.map(template => (
                 <button
                   type="button"
                   key={template.id}
-                  onClick={() => setSelectedTemplate(template)}
+                  onClick={() => setCustomPrompt(template.template)}
                   className={`
                     p-3 rounded-lg text-sm font-semibold transition-all duration-200 text-center
-                    ${selectedTemplate.id === template.id 
-                      ? 'bg-blue-600 text-white ring-2 ring-offset-2 ring-offset-gray-800 ring-blue-500 shadow-lg' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-                    }
+                    bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600
                   `}
                 >
                   {template.name}
                 </button>
               ))}
-            </div>
-
-            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200">Prompt Preview</h4>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 italic">
-                  "{selectedTemplate.template.replace(/\${firstName}/g, '{name}')}"
-                </p>
             </div>
         </fieldset>
 

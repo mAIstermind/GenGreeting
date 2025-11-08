@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import type { GeneratedCard } from '../types';
-import { editGreetingCardImage } from '../services/geminiService';
-import { CloseIcon } from './icons/CloseIcon';
-import { SparklesIcon } from './icons/SparklesIcon';
+import type { GeneratedCard } from '../types.ts';
+import type { GeminiService } from '../services/geminiService.ts';
+import { CloseIcon } from './icons/CloseIcon.tsx';
+import { SparklesIcon } from './icons/SparklesIcon.tsx';
 
 interface EditModalProps {
     card: GeneratedCard;
     onClose: () => void;
     onSave: (updatedCard: GeneratedCard) => void;
+    geminiService: GeminiService | null;
 }
 
-export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave }) => {
+export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave, geminiService }) => {
     const [editPrompt, setEditPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -25,6 +26,10 @@ export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave }) =
     }, [card]);
 
     const handleEdit = async () => {
+        if (!geminiService) {
+            setError("API service is not available.");
+            return;
+        }
         if (!editPrompt.trim()) {
             setError("Please enter an edit instruction.");
             return;
@@ -33,7 +38,7 @@ export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave }) =
         setError(null);
         try {
             const currentImage = editedImageUrl || card.imageUrl;
-            const newImageUrl = await editGreetingCardImage(currentImage, editPrompt);
+            const newImageUrl = await geminiService.editGreetingCardImage(currentImage, editPrompt);
             setEditedImageUrl(newImageUrl);
         } catch (e: any) {
             setError(e.message || "Failed to edit image.");
@@ -49,6 +54,8 @@ export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave }) =
             onClose(); // Or just close if no edits were made
         }
     };
+
+    const canEdit = geminiService && !isEditing && !!editPrompt;
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" aria-modal="true" role="dialog">
@@ -84,7 +91,7 @@ export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave }) =
                             onChange={(e) => setEditPrompt(e.target.value)}
                             placeholder="e.g., 'Add a retro filter' or 'Make the background blue'"
                             className="w-full h-24 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                            disabled={isEditing}
+                            disabled={isEditing || !geminiService}
                         />
 
                         {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -96,7 +103,7 @@ export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave }) =
                         </button>
                         <button 
                             onClick={handleEdit} 
-                            disabled={isEditing || !editPrompt}
+                            disabled={!canEdit}
                             className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-500 text-base font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <SparklesIcon className="w-5 h-5"/>
