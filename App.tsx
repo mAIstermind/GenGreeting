@@ -113,7 +113,7 @@ function App() {
     });
   };
 
-  const handleMap = (mapping: { name: string; email: string; prompt: string; }, customPrompt: string) => {
+  const handleMap = (mapping: { name: string; email: string; prompt: string; }, theme: string) => {
     if (!csvFile || !geminiService) return;
 
     setError(null);
@@ -150,12 +150,14 @@ function App() {
           try {
             const contact = parsedContacts[i];
             
-            let finalPrompt = customPrompt;
+            let finalTheme = theme;
             if (contact.customPromptDetail) {
-              finalPrompt += ` ${contact.customPromptDetail}`;
+              finalTheme += ` (${contact.customPromptDetail})`;
             }
 
-            const imageUrl = await geminiService.generateGreetingCardImage(contact.name.split(' ')[0], finalPrompt);
+            const imageConcept = await geminiService.generatePromptConcept(contact.name, finalTheme);
+            const imageUrl = await geminiService.generateGreetingCardImage(contact.name.split(' ')[0], imageConcept);
+            
             const newCard: GeneratedCard = { ...contact, imageUrl };
             newCards.push(newCard);
             setGeneratedCards([...newCards]);
