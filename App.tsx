@@ -28,6 +28,7 @@ const TRIAL_LIMIT = 10;
 
 function App() {
   const [brandingConfig, setBrandingConfig] = useState<BrandingConfig | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [appState, setAppState] = useState<AppState>('idle');
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
@@ -81,6 +82,20 @@ function App() {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
     };
+  }, []);
+
+  useEffect(() => {
+    const verifyApiConfiguration = async () => {
+      try {
+        await geminiService.checkApiHealth();
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    verifyApiConfiguration();
   }, []);
 
   const handleSettingsSave = (newName: string, newLogo: string | null) => {
@@ -317,7 +332,7 @@ function App() {
     }
   };
 
-  if (!brandingConfig) {
+  if (!brandingConfig || isInitializing) {
     return (
         <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
             <svg className="animate-spin h-10 w-10 text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -411,7 +426,7 @@ function App() {
                 ))}
                 </nav>
             </div>
-            {TABS[activeTab].content}
+            {!error && TABS[activeTab].content}
         </div>
       </main>
 

@@ -43,7 +43,12 @@ const generateImageWithImagen = async (prompt: string): Promise<string> => {
     return callApi('generateImageWithImagen', { prompt });
 };
 
+const checkApiHealth = async (): Promise<{ status: string }> => {
+    return callApi('healthCheck', {});
+};
+
 export const geminiService = {
+    checkApiHealth,
     generatePromptConcept,
     generateGreetingCardImage,
     editGreetingCardImage,

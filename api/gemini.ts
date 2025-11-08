@@ -20,7 +20,7 @@ export default async function handler(req: any, res: any) {
 
     const apiKey = process.env.API_KEY;
     if (!apiKey) {
-        return res.status(500).json({ error: 'API key not configured.' });
+        return res.status(500).json({ error: 'A Gemini API key is not configured. The application cannot function without it.' });
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -30,6 +30,11 @@ export default async function handler(req: any, res: any) {
         let result;
 
         switch (action) {
+            case 'healthCheck': {
+                result = { status: 'ok' };
+                break;
+            }
+            
             case 'generatePromptConcept': {
                 const { theme, contactName } = payload;
                 const systemInstruction = `You are a creative assistant. Your task is to generate a detailed and imaginative prompt for an AI image generator. The prompt should be based on a theme provided by the user and personalized with the recipient's first name. The goal is to create a visually stunning and unique greeting card image. Only return the prompt text itself, without any introductory phrases.`;
