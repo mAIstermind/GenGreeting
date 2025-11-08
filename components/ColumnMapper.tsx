@@ -56,8 +56,6 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
 
   const isMappingValid = nameColumn && emailColumn && templateId;
 
-  const selectedTemplateText = promptTemplates.find(t => t.id === templateId)?.template.replace(/\${firstName}/g, '[Recipient Name]') || '';
-
   return (
     <div className="w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -128,21 +126,32 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
 
         <fieldset>
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Select Image Style</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               Choose a creative style for the AI to use. This style will be applied to every person in your list.
             </p>
-             <select
-                id="template"
-                value={templateId}
-                onChange={(e) => setTemplateId(e.target.value)}
-                className="w-full p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors text-base text-gray-900 dark:text-gray-100"
-             >
+             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {promptTemplates.map(template => (
-                    <option key={template.id} value={template.id}>{template.name}</option>
+                    <div key={template.id} onClick={() => setTemplateId(template.id)}
+                        className={`
+                            group cursor-pointer rounded-lg border-2 p-2 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-gray-800 focus-within:ring-blue-500 flex flex-col
+                            ${templateId === template.id ? 'border-blue-500 bg-blue-500/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400'}
+                            transition-all duration-200
+                        `}
+                    >
+                        <div className="aspect-square w-full bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden mb-2">
+                             <img src={template.thumbnail} alt={template.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"/>
+                        </div>
+                        <div className="text-center mt-auto">
+                            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate" title={template.name}>
+                                {template.name}
+                            </h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 px-1" title={template.description}>{template.description}</p>
+                        </div>
+                    </div>
                 ))}
-            </select>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
-                Prompt Preview: "{selectedTemplateText}"
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 italic text-center">
+                Prompt Preview: "{promptTemplates.find(t => t.id === templateId)?.template.replace(/\${firstName}/g, '[Recipient Name]') || ''}"
             </p>
         </fieldset>
 

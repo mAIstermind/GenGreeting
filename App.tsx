@@ -19,6 +19,7 @@ import { LoginIcon } from './components/icons/LoginIcon.tsx';
 import { LogoutIcon } from './components/icons/LogoutIcon.tsx';
 import { QuestionMarkIcon } from './components/icons/QuestionMarkIcon.tsx';
 import { UpgradeIcon } from './components/icons/UpgradeIcon.tsx';
+import { CheckIcon } from './components/icons/CheckIcon.tsx';
 import { geminiService } from './services/geminiService.ts';
 import type { Contact, GeneratedCard } from './types.ts';
 import { ImageGenerator } from './components/ImageGenerator.tsx';
@@ -444,14 +445,20 @@ function App() {
           <>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
               <h2 className="text-3xl font-bold text-white">Your Cards Are Ready!</h2>
-              <div className="flex gap-2">
-                 <button onClick={handleDownloadAll} disabled={isBranding || !isOnline} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500">
+              <div className="flex flex-col items-center gap-2">
+                 <button onClick={handleDownloadAll} disabled={isBranding || !isOnline} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 w-full sm:w-auto">
                   {isBranding ? <Loader/> : <><ZipIcon className="w-5 h-5" /> Download All (.zip)</>}
                 </button>
-                <button onClick={handleReset} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-gray-500 text-base font-medium rounded-md shadow-sm text-gray-200 bg-gray-700 hover:bg-gray-600">
+                 {(brandName || brandLogo) && isLoggedIn && (
+                  <p className="text-xs text-green-400 flex items-center justify-center gap-1.5">
+                    <CheckIcon className="w-4 h-4" />
+                    Your custom branding will be applied.
+                  </p>
+                )}
+              </div>
+               <button onClick={handleReset} className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-gray-500 text-base font-medium rounded-md shadow-sm text-gray-200 bg-gray-700 hover:bg-gray-600 w-full sm:w-auto">
                   <RefreshIcon className="w-5 h-5" /> Start Over
                 </button>
-              </div>
             </div>
             {isBranding && (
               <div className="my-4">
@@ -637,7 +644,6 @@ function App() {
         <RegisterModal
             onClose={() => setAuthModal(null)}
             onSwitchToLogin={() => setAuthModal('login')}
-            onRegisterSuccess={() => { setIsLoggedIn(true); setAuthModal(null); }}
         />
       )}
     </div>

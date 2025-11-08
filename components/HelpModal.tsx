@@ -89,12 +89,20 @@ const AgencyGuide = () => (
             </LI>
         </UL>
         
-        <H3>4. GoHighLevel (GHL) Funnel Integration</H3>
-        <P>The project includes three pre-built HTML files for a GHL funnel: <Code>ghl-landing-page.html</Code>, <Code>ghl-pricing-page.html</Code>, and <Code>ghl-thank-you-page.html</Code>.</P>
+        <H3>4. GHL Funnel Integration</H3>
+        <P>The project includes three pre-built HTML files for a GHL funnel: <Code>ghl-landing-page.html</Code>, <Code>ghl-pricing-page.html</Code>, and <Code>ghl-thank-you-page.html</Code>. These are for your end-users.</P>
         <UL>
             <LI><Strong>Implementation:</Strong> In your GHL funnel builder, copy the content from the HTML files into custom HTML blocks on each respective page.</LI>
             <LI><Strong>Crucial:</Strong> Find all comments marked <Code>&lt;!-- NOTE FOR GHL USER: ... --&gt;</Code> and replace placeholder links (<Code>href="#"</Code>) with your actual GHL form links, checkout pages, etc.</LI>
             <LI><Strong>Link Your App:</Strong> On the "Thank You" page in GHL, edit the "Go to the App" button to link to the public URL of your deployed application.</LI>
+        </UL>
+
+        <H3>5. Agency Whitelabel Sales Pages</H3>
+        <P>This project also includes pre-built HTML templates for selling this entire application to other agencies. You can view them here. These are designed to be imported into your own marketing platform (like GHL).</P>
+        <UL>
+            <LI><a href="/agency-sales-page.html" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View Agency Sales Page</a></LI>
+            <LI><a href="/agency-pricing-page.html" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View Agency Pricing Page</a></LI>
+            <LI><a href="/agency-onboarding-thank-you.html" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View Agency Onboarding Page</a></LI>
         </UL>
     </GuideContent>
 );
@@ -118,7 +126,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                             onClick={() => setActiveTab('user')}
                             className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg ${activeTab === 'user' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}
                         >
-                            User Guide
+                            End-User Guide
                         </button>
                         <button
                             onClick={() => setActiveTab('agency')}

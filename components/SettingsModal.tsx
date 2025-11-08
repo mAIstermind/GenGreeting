@@ -48,9 +48,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ initialName, initi
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" aria-modal="true" role="dialog">
             <div className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
-                <div className="p-6 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Branding &amp; Profile</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800 dark:hover:text-white transition-colors" aria-label="Close settings modal">
+                <div className="p-6 flex justify-between items-start border-b border-gray-200 dark:border-gray-700">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Branding &amp; Profile</h2>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                          Your name and logo will be automatically applied as a watermark when using the 'Download All (.zip)' feature.
+                        </p>
+                    </div>
+                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800 dark:hover:text-white transition-colors flex-shrink-0 ml-4" aria-label="Close settings modal">
                         <CloseIcon className="w-7 h-7"/>
                     </button>
                 </div>
