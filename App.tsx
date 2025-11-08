@@ -25,6 +25,7 @@ import { promptTemplates } from './promptTemplates.ts';
 type AppState = 'idle' | 'mapping' | 'generating' | 'done';
 type AuthModalState = 'login' | 'register' | null;
 const TRIAL_LIMIT = 10;
+const API_KEY_ERROR_MESSAGE = "A Gemini API key is not configured. The application cannot function without it.";
 
 function App() {
   const [brandingConfig, setBrandingConfig] = useState<BrandingConfig | null>(null);
@@ -103,7 +104,7 @@ function App() {
     } else {
       setGeminiService(null);
       // FIX: Updated error message as settings-based API key is removed.
-      setError("A Gemini API key is not configured. The application cannot function without it.");
+      setError(API_KEY_ERROR_MESSAGE);
     }
   }, []);
 
@@ -405,36 +406,55 @@ function App() {
       
       <main className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {!isOnline && (
-                <div className="mb-8 bg-yellow-900/50 border border-yellow-500 text-yellow-300 px-4 py-3 rounded-lg text-center" role="status">
-                    <strong className="font-bold">You are currently offline. </strong>
-                    <span className="block sm:inline">Functionality is limited until you reconnect.</span>
+            {error === API_KEY_ERROR_MESSAGE && !geminiService ? (
+              <div className="flex flex-col items-center justify-center text-center py-16 px-6 bg-gray-800/50 rounded-lg border border-red-500/30">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h2 className="text-2xl font-bold text-white mb-2">Application Configuration Error</h2>
+                <p className="max-w-lg text-gray-300 mb-6">
+                    This application cannot connect to the AI service. If you are the administrator, please ensure the Gemini API key is correctly configured in your deployment environment variables.
+                </p>
+                <div className="mt-2 bg-gray-900 p-4 rounded-lg border border-gray-700 text-left w-full max-w-lg">
+                    <p className="font-mono text-sm text-red-400 break-words">
+                        <strong className="font-bold text-red-300">Error Details:</strong> {error}
+                    </p>
                 </div>
-            )}
-            <div className="flex justify-center border-b border-gray-700 mb-8">
-                {Object.entries(TABS).map(([key, tab]) => (
-                    <button
-                        key={key}
-                        onClick={() => setActiveTab(key as 'csv' | 'single')}
-                        className={`px-4 py-3 text-lg font-medium transition-colors duration-200 ${
-                            activeTab === key
-                                ? 'border-b-2 border-blue-500 text-blue-400'
-                                : 'text-gray-400 hover:text-white'
-                        }`}
-                    >
-                        {tab.name}
-                    </button>
-                ))}
-            </div>
+              </div>
+            ) : (
+              <>
+                {!isOnline && (
+                    <div className="mb-8 bg-yellow-900/50 border border-yellow-500 text-yellow-300 px-4 py-3 rounded-lg text-center" role="status">
+                        <strong className="font-bold">You are currently offline. </strong>
+                        <span className="block sm:inline">Functionality is limited until you reconnect.</span>
+                    </div>
+                )}
+                <div className="flex justify-center border-b border-gray-700 mb-8">
+                    {Object.entries(TABS).map(([key, tab]) => (
+                        <button
+                            key={key}
+                            onClick={() => setActiveTab(key as 'csv' | 'single')}
+                            className={`px-4 py-3 text-lg font-medium transition-colors duration-200 ${
+                                activeTab === key
+                                    ? 'border-b-2 border-blue-500 text-blue-400'
+                                    : 'text-gray-400 hover:text-white'
+                            }`}
+                        >
+                            {tab.name}
+                        </button>
+                    ))}
+                </div>
 
-            {error && (
-                <div className="mb-8 bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-center" role="alert">
-                    <strong className="font-bold">An Error Occurred: </strong>
-                    <span className="block sm:inline">{error}</span>
-                </div>
+                {error && (
+                    <div className="mb-8 bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-center" role="alert">
+                        <strong className="font-bold">An Error Occurred: </strong>
+                        <span className="block sm:inline">{error}</span>
+                    </div>
+                )}
+              
+                {TABS[activeTab].content}
+              </>
             )}
-          
-            {TABS[activeTab].content}
         </div>
       </main>
 
