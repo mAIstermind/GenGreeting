@@ -48,6 +48,15 @@ const UserGuide = () => (
             <LI><Strong>Editing:</Strong> Hover over any card image and click the "Edit" button. Type your instruction (e.g., <Code>"Make the background blue"</Code>) and click "Apply Edit".</LI>
             <LI><Strong>Branding (Pro Feature):</Strong> Click the user icon in the header to open Settings. You can add your name and upload a logo. Your branding will be automatically applied when you use "Download All (.zip)".</LI>
         </UL>
+        
+        <H3>5. Installing as a Desktop/Mobile App (PWA)</H3>
+        <P>This application is a Progressive Web App (PWA), which means you can install it directly onto your computer or phone for a faster, more integrated experience, just like a native app.</P>
+        <UL>
+            <LI><Strong>On Desktop (Chrome, Edge):</Strong> Look for an "Install" icon in the address bar (usually on the right side). Click it and then confirm the installation.</LI>
+            <LI><Strong>On Mobile (iOS/Safari):</Strong> Tap the "Share" button, then scroll down and tap "Add to Home Screen".</LI>
+            <LI><Strong>On Mobile (Android/Chrome):</Strong> Tap the three-dot menu, then tap "Install app" or "Add to Home screen".</LI>
+        </UL>
+        <P>This gives you quick, one-click access and a focused, full-screen experience.</P>
     </GuideContent>
 );
 
@@ -62,7 +71,11 @@ const AgencyGuide = () => (
             <LI><Strong>Deployment:</Strong> Upload all application files to your host. Since it's a static app, no build step is needed. Just serve the <Code>index.html</Code> file.</LI>
         </UL>
 
-        <H3>2. Whitelabel Customization</H3>
+        <H3>2. Connecting a Custom Domain (Recommended)</H3>
+        <P>Once deployed, serve the app from your own domain. The <Strong>subdomain approach</Strong> (e.g., <Code>app.yourdomain.com</Code>) is highly recommended for its simplicity and reliability.</P>
+        <P>For detailed instructions, please refer to the <Code>DEPLOYMENT_OPTIONS.md</Code> file included in the project source code.</P>
+
+        <H3>3. Whitelabel Customization</H3>
         <P>Easily rebrand the application for your agency.</P>
          <UL>
             <LI><Strong>How it Works:</Strong> The app's name is loaded from a <Code>&lt;script&gt;</Code> tag in <Code>index.html</Code>.</LI>
@@ -76,7 +89,7 @@ const AgencyGuide = () => (
             </LI>
         </UL>
         
-        <H3>3. GoHighLevel (GHL) Funnel Integration</H3>
+        <H3>4. GoHighLevel (GHL) Funnel Integration</H3>
         <P>The project includes three pre-built HTML files for a GHL funnel: <Code>ghl-landing-page.html</Code>, <Code>ghl-pricing-page.html</Code>, and <Code>ghl-thank-you-page.html</Code>.</P>
         <UL>
             <LI><Strong>Implementation:</Strong> In your GHL funnel builder, copy the content from the HTML files into custom HTML blocks on each respective page.</LI>

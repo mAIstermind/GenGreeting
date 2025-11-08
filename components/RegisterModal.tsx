@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CloseIcon } from './icons/CloseIcon';
+import { CloseIcon } from './icons/CloseIcon.tsx';
 
 interface RegisterModalProps {
     onClose: () => void;
@@ -22,16 +22,11 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSwitchT
             return;
         }
         setIsLoading(true);
-        // Placeholder for registration logic
-        console.log("Attempting to register:", { email, password });
+        // Inform user that registration is not available in demo
         setTimeout(() => {
-            // To test the flow, we'll simulate a successful registration
-            console.log("Simulating successful registration");
-            onRegisterSuccess();
-            // In a real app, you would handle errors like this:
-            // setError('An account with this email already exists.');
-            // setIsLoading(false);
-        }, 1000);
+            setError('Account registration is not available in this demo. Please use the free trial.');
+            setIsLoading(false);
+        }, 500);
     };
 
     return (

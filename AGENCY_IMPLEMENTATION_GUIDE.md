@@ -1,12 +1,12 @@
-# GenGreeting Agency & Implementation Guide
+# AI Greetings Agency & Implementation Guide
 
 ## 1. Introduction for Agencies & Developers
 
-This guide provides a comprehensive walkthrough for deploying, customizing (whitelabeling), and integrating the GenGreeting application into a marketing funnel. It is designed for technical users, such as agency owners or developers, who wish to offer this tool to their clients under their own brand.
+This guide provides a comprehensive walkthrough for deploying, customizing (whitelabeling), and integrating the AI Greetings application into a marketing funnel. It is designed for technical users, such as agency owners or developers, who wish to offer this tool to their clients under their own brand.
 
 ## 2. Deployment Guide
 
-Follow these steps to deploy your own instance of the GenGreeting application.
+Follow these steps to deploy your own instance of the AI Greetings application.
 
 ### Prerequisites
 
@@ -21,14 +21,14 @@ You should have a directory containing all the application files (`index.html`, 
 
 The application requires a Google Gemini API key to function. This key must be configured as an **environment variable** in your deployment environment.
 
-*   **Variable Name:** `API_KEY`
+*   **Variable Name:** `GEMINI_API_KEY`
 *   **Value:** Your Google Gemini API Key.
 
 **How to set environment variables:**
 *   **Vercel/Netlify:** Go to your project settings -> Environment Variables.
 *   **Other hosts:** Consult your hosting provider's documentation for setting environment variables.
 
-The application code will automatically and securely pick up this `API_KEY` variable. **Do not hardcode your API key directly into the source code.**
+The application's serverless function will automatically and securely pick up this `GEMINI_API_KEY` variable. **Do not hardcode your API key directly into the source code.**
 
 ### Step 3: Deploy the Application
 
@@ -36,11 +36,21 @@ Upload all the application files to your chosen hosting provider. Since this is 
 
 Once deployed, you will have a public URL for your application (e.g., `https://your-app-name.vercel.app`).
 
-## 3. Whitelabel Customization
+## 3. Connecting a Custom Domain (Recommended)
+
+Once your application is deployed, you'll want to serve it from your own domain instead of the default hosting URL. This enhances your brand's professionalism and credibility.
+
+There are several ways to do this, with the **subdomain approach being the highly recommended method** for its simplicity and reliability.
+
+For a detailed comparison of your options and step-by-step instructions, please refer to the dedicated guide:
+
+**[➡️ Read the Custom Domain & Deployment Options Guide](./DEPLOYMENT_OPTIONS.md)**
+
+## 4. Whitelabel Customization
 
 The application is built to be easily rebranded for agency use.
 
-### 3.1. The Branding Mechanism
+### 4.1. The Branding Mechanism
 
 The application's branding (its name and accent color text) is not hardcoded. It is dynamically loaded from a `<script>` tag within `index.html`. This allows you to change the branding without touching the core application logic.
 
@@ -48,19 +58,19 @@ The application's branding (its name and accent color text) is not hardcoded. It
 <!-- Located in index.html -->
 <script id="branding-config" type="application/json">
   {
-    "appName": "Greeting",
-    "appAccent": "Gen"
+    "appName": "Greetings",
+    "appAccent": "AI"
   }
 </script>
 ```
 
-### 3.2. How to Rebrand the Application
+### 4.2. How to Rebrand the Application
 
 1.  Open `index.html` in a text editor.
 2.  Locate the `<script id="branding-config">` tag.
 3.  Modify the `appName` and `appAccent` values to match your agency or client's brand.
-    *   `appAccent` is the colored part of the name (e.g., "Gen").
-    *   `appName` is the main part of the name (e.g., "Greeting").
+    *   `appAccent` is the colored part of the name (e.g., "AI").
+    *   `appName` is the main part of the name (e.g., "Greetings").
     *   The result will be displayed as `<appAccent><appName>`.
 
 **Example:** For a brand called "LeadSpark":
@@ -73,7 +83,7 @@ The application's branding (its name and accent color text) is not hardcoded. It
 
 4.  Save the `index.html` file and redeploy the application. The app's header and the browser tab title will now reflect your new branding.
 
-## 4. GoHighLevel (GHL) Funnel Integration
+## 5. GoHighLevel (GHL) Funnel Integration
 
 The project includes three pre-built HTML files designed for a GHL funnel:
 *   `ghl-landing-page.html`: Your main sales page.
@@ -97,25 +107,8 @@ The final and most important step is to connect your marketing funnel to the act
 
 1.  Navigate to your **"Thank You"** page in the GHL funnel builder.
 2.  Find the "Go to the App" button.
-3.  Change its link from the placeholder (`#`) to the **public URL of your deployed GenGreeting application** (from Deployment Step 3).
+3.  Change its link from the placeholder (`#`) to the **public URL of your deployed AI Greetings application** (e.g., `https://gengreeting.yourdomain.com`).
 
-## 5. Testing the Whitelabel Setup
+## 6. User Documentation
 
-Follow these stages to ensure everything is working correctly.
-
-*   **Stage 1: Base Application Test**
-    *   Navigate directly to your deployed application URL.
-    *   Test both core functions: generate a single image with Imagen and perform a batch generation using a sample CSV file.
-    *   Confirm images are generated successfully.
-
-*   **Stage 2: Branding Customization Test**
-    *   Modify the `appName` and `appAccent` in `index.html` as described above.
-    *   Redeploy the application.
-    *   Visit the application URL and verify that the header and browser title show the new branding.
-
-*   **Stage 3: Funnel Integration Test**
-    *   Open the live URL of your GHL landing page.
-    *   Click through the call-to-action buttons. Ensure they open the correct forms or navigate to the next funnel step.
-    *   Complete a test sign-up.
-    *   On the "Thank You" page, click the "Go to the App" button.
-    *   Confirm that you are correctly redirected to your deployed, whitelabeled application.
+The project includes a `USER_GUIDE.md` file. This is a comprehensive guide for end-users that you can provide to your clients. You can also use the in-app "Help" modal which displays this guide directly.

@@ -11,11 +11,14 @@ import { EditModal } from './components/EditModal.tsx';
 import { SettingsModal } from './components/SettingsModal.tsx';
 import { LoginModal } from './components/LoginModal.tsx';
 import { RegisterModal } from './components/RegisterModal.tsx';
+import { HelpModal } from './components/HelpModal.tsx';
 import { RefreshIcon } from './components/icons/RefreshIcon.tsx';
 import { ZipIcon } from './components/icons/ZipIcon.tsx';
 import { UserCircleIcon } from './components/icons/UserCircleIcon.tsx';
 import { LoginIcon } from './components/icons/LoginIcon.tsx';
 import { LogoutIcon } from './components/icons/LogoutIcon.tsx';
+import { QuestionMarkIcon } from './components/icons/QuestionMarkIcon.tsx';
+import { UpgradeIcon } from './components/icons/UpgradeIcon.tsx';
 import { geminiService } from './services/geminiService.ts';
 import type { Contact, GeneratedCard } from './types.ts';
 import { ImageGenerator } from './components/ImageGenerator.tsx';
@@ -24,7 +27,24 @@ import { promptTemplates } from './promptTemplates.ts';
 
 type AppState = 'idle' | 'mapping' | 'generating' | 'done';
 type AuthModalState = 'login' | 'register' | null;
+
+interface Subscription {
+  planName: string;
+  monthlyLimit: number;
+  cycleStartDate: number;
+  usedInCycle: number;
+}
+
+const PLANS = {
+  pro: { name: 'Pro', limit: 500 },
+  business: { name: 'Business', limit: 2500 },
+  agency: { name: 'Agency', limit: 10000 },
+};
+
 const TRIAL_LIMIT = 10;
+const TRIAL_STORAGE_KEY = 'aigreetings_trial_count';
+const SUBSCRIPTION_STORAGE_KEY = 'aigreetings_subscription';
+
 
 function App() {
   const [brandingConfig, setBrandingConfig] = useState<BrandingConfig | null>(null);
@@ -35,9 +55,10 @@ function App() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [generatedCards, setGeneratedCards] = useState<GeneratedCard[]>([]);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<React.ReactNode | null>(null);
   const [editingCard, setEditingCard] = useState<GeneratedCard | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [brandName, setBrandName] = useState(() => localStorage.getItem('brand_name') || '');
   const [brandLogo, setBrandLogo] = useState<string | null>(() => localStorage.getItem('brand_logo'));
   const [isBranding, setIsBranding] = useState(false);
@@ -47,7 +68,8 @@ function App() {
   // --- Auth State ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authModal, setAuthModal] = useState<AuthModalState>(null);
-  const [cardsGeneratedInTrial, setCardsGeneratedInTrial] = useState(0);
+  const [trialGenerationsUsed, setTrialGenerationsUsed] = useState(0);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
 
   useEffect(() => {
     try {
@@ -59,24 +81,74 @@ function App() {
             setBrandingConfig({ ...config, fullAppName });
         } else {
             console.error("Branding configuration not found.");
-            const fallbackConfig = { appName: 'Greeting', appAccent: 'Gen', fullAppName: 'GenGreeting' };
+            const fallbackConfig = { appName: 'Greetings', appAccent: 'AI', fullAppName: 'AI Greetings' };
             setBrandingConfig(fallbackConfig);
             document.title = `${fallbackConfig.fullAppName} - AI Card Generator`;
         }
     } catch (error) {
         console.error("Failed to parse branding configuration:", error);
-        const fallbackConfig = { appName: 'Greeting', appAccent: 'Gen', fullAppName: 'GenGreeting' };
+        const fallbackConfig = { appName: 'Greetings', appAccent: 'AI', fullAppName: 'AI Greetings' };
         setBrandingConfig(fallbackConfig);
         document.title = `${fallbackConfig.fullAppName} - AI Card Generator`;
     }
   }, []);
   
+  const checkSubscriptionCycle = (sub: Subscription): Subscription => {
+      const cycleStartDate = new Date(sub.cycleStartDate);
+      const now = new Date();
+
+      // Check if the current month and year are different from the cycle start month and year.
+      // This accurately handles the transition to a new calendar month, fixing the previous 30-day bug.
+      if (now.getMonth() !== cycleStartDate.getMonth() || now.getFullYear() !== cycleStartDate.getFullYear()) {
+          const newSub = { ...sub, usedInCycle: 0, cycleStartDate: now.getTime() };
+          localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(newSub));
+          return newSub;
+      }
+      
+      return sub;
+  };
+
+  const handleLoginSuccess = () => {
+      setIsLoggedIn(true);
+      setAuthModal(null);
+      // Simulate giving user the "Pro" plan on first login
+      const newSub: Subscription = {
+          planName: 'pro',
+          monthlyLimit: PLANS.pro.limit,
+          cycleStartDate: Date.now(),
+          usedInCycle: 0,
+      };
+      localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(newSub));
+      setSubscription(newSub);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setSubscription(null);
+    localStorage.removeItem(SUBSCRIPTION_STORAGE_KEY);
+  }
+
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
+    const storedTrialCount = localStorage.getItem(TRIAL_STORAGE_KEY);
+    setTrialGenerationsUsed(storedTrialCount ? parseInt(storedTrialCount, 10) : 0);
+    
+    const storedSub = localStorage.getItem(SUBSCRIPTION_STORAGE_KEY);
+    if(storedSub) {
+      try {
+        const parsedSub = JSON.parse(storedSub);
+        const currentSub = checkSubscriptionCycle(parsedSub);
+        setSubscription(currentSub);
+        setIsLoggedIn(true);
+      } catch (e) {
+        console.error("Failed to parse subscription data", e);
+        localStorage.removeItem(SUBSCRIPTION_STORAGE_KEY);
+      }
+    }
 
     return () => {
         window.removeEventListener('online', handleOnline);
@@ -94,7 +166,6 @@ function App() {
         setIsInitializing(false);
       }
     };
-
     verifyApiConfiguration();
   }, []);
 
@@ -110,7 +181,6 @@ function App() {
     }
     setIsSettingsOpen(false);
   };
-
 
   const handleFileSelect = (file: File) => {
     setError(null);
@@ -151,10 +221,37 @@ function App() {
           customPromptDetail: mapping.prompt ? row[mapping.prompt] || '' : '',
         })).filter((c: Contact) => c.name && c.email);
         
-        if (!isLoggedIn && parsedContacts.length > (TRIAL_LIMIT - cardsGeneratedInTrial)) {
-          setError(`As a guest, you can generate ${TRIAL_LIMIT - cardsGeneratedInTrial} more cards. Your CSV has ${parsedContacts.length}. Please log in or upload a smaller file.`);
-          setAppState('idle');
-          return;
+        // Check generation limits
+        if (isLoggedIn && subscription) {
+            const remaining = subscription.monthlyLimit - subscription.usedInCycle;
+            if (parsedContacts.length > remaining) {
+                setError(
+                    <span>
+                        Your current plan has {remaining} generations left this cycle, but your spreadsheet has {parsedContacts.length} contacts.
+                        <a href="/ghl-pricing-page.html" target="_blank" rel="noopener noreferrer" className="font-bold text-blue-400 hover:underline ml-2">
+                            Please upgrade your plan
+                        </a>
+                        &nbsp;or upload a smaller file.
+                    </span>
+                );
+                setAppState('idle');
+                return;
+            }
+        } else {
+            const remaining = TRIAL_LIMIT - trialGenerationsUsed;
+            if (parsedContacts.length > remaining) {
+              setError(
+                <span>
+                  Your free trial has {remaining > 0 ? `${remaining} generations` : 'no generations'} left. Your spreadsheet has {parsedContacts.length} contacts.&nbsp;
+                  <a href="/ghl-pricing-page.html" target="_blank" rel="noopener noreferrer" className="font-bold text-blue-400 hover:underline">
+                    Please upgrade your plan
+                  </a>
+                  &nbsp;or upload a smaller file.
+                </span>
+              );
+              setAppState('idle');
+              return;
+            }
         }
 
         setContacts(parsedContacts);
@@ -176,25 +273,39 @@ function App() {
         for (let i = 0; i < parsedContacts.length; i++) {
           try {
             const contact = parsedContacts[i];
-            
             const firstName = contact.name.split(' ')[0];
-            let imagePrompt = selectedTemplate.template.replace(/\${firstName}/g, firstName);
+            let imagePrompt = selectedTemplate.template
+              .replace(/\${firstName}/g, firstName)
+              .replace(/\${email}/g, contact.email);
 
             if (contact.customPromptDetail) {
                 imagePrompt += ` Also incorporate this specific detail: "${contact.customPromptDetail}".`;
             }
 
             const imageUrl = await geminiService.generateGreetingCardImage(imagePrompt);
-            
             const newCard: GeneratedCard = { ...contact, imageUrl };
             newCards.push(newCard);
             setGeneratedCards([...newCards]);
             setProgress(((i + 1) / parsedContacts.length) * 100);
-            if (!isLoggedIn) {
-              setCardsGeneratedInTrial(prev => prev + 1);
+
+            // Update usage counts
+            if (isLoggedIn && subscription) {
+              setSubscription(prev => {
+                if (!prev) return null;
+                const newSub = { ...prev, usedInCycle: prev.usedInCycle + 1 };
+                localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(newSub));
+                return newSub;
+              });
+            } else {
+              setTrialGenerationsUsed(prev => {
+                const newCount = prev + 1;
+                localStorage.setItem(TRIAL_STORAGE_KEY, String(newCount));
+                return newCount;
+              });
             }
           } catch (err: any) {
             setError(`Failed to generate card for ${parsedContacts[i].name}. ${err.message}. Please try again.`);
+            break; // Stop generation on error
           }
         }
         setAppState('done');
@@ -253,12 +364,21 @@ function App() {
     }
     
     for (let i = 0; i < cardsToZip.length; i++) {
-      const card = cardsToZip[i];
-      const response = await fetch(card.imageUrl);
-      const blob = await response.blob();
-      const safeFileName = card.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      zip.file(`greeting_card_${safeFileName}.png`, blob);
-      setProgress(50 + (((i + 1) / cardsToZip.length) * 50));
+        const card = cardsToZip[i];
+        try {
+            const response = await fetch(card.imageUrl);
+            if (!response.ok) {
+                console.warn(`Skipping failed image fetch for ${card.name} (status: ${response.status})`);
+                continue;
+            }
+            const blob = await response.blob();
+            const safeFileName = card.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            zip.file(`greeting_card_${safeFileName}.png`, blob);
+        } catch (err) {
+            console.error(`Error processing or adding card for ${card.name} to zip:`, err);
+        } finally {
+            setProgress(50 + (((i + 1) / cardsToZip.length) * 50));
+        }
     }
 
     zip.generateAsync({ type: 'blob' }).then((content: any) => {
@@ -270,6 +390,32 @@ function App() {
 
   const renderContent = () => {
     const isDisabled = appState !== 'idle' || !isOnline;
+    const remainingGenerations = isLoggedIn && subscription 
+      ? subscription.monthlyLimit - subscription.usedInCycle
+      : TRIAL_LIMIT - trialGenerationsUsed;
+
+    if (remainingGenerations <= 0 && appState === 'idle') {
+      return (
+        <div className="text-center bg-gray-800 p-8 rounded-lg max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold text-white mb-4">
+            {isLoggedIn ? 'You have used all your credits for this cycle.' : 'You have used all your free trial generations.'}
+          </h2>
+          <p className="text-gray-300 mb-6">
+            To continue generating beautiful, personalized cards, please upgrade your plan.
+          </p>
+          <a
+            href="/ghl-pricing-page.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          >
+            <UpgradeIcon className="w-5 h-5"/>
+            Upgrade Your Plan
+          </a>
+        </div>
+      );
+    }
+    
     switch (appState) {
       case 'idle':
         return (
@@ -277,7 +423,7 @@ function App() {
             <FileUpload onFileSelect={handleFileSelect} disabled={isDisabled} />
             {!isLoggedIn && (
                 <p className="text-center text-gray-400 mt-4">
-                    You have {TRIAL_LIMIT - cardsGeneratedInTrial} free generations remaining.
+                    You have {Math.max(0, remainingGenerations)} free generations remaining.
                 </p>
             )}
           </>
@@ -346,41 +492,66 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col">
-      <header className="py-6 px-4 sm:px-6 lg:px-8 bg-gray-900/80 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <header className="py-4 px-4 sm:px-6 lg:px-8 bg-gray-900/80 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto flex justify-between items-center gap-4">
           <h1 className="text-3xl font-bold tracking-tighter text-white">
             <span className="text-blue-400">{brandingConfig.appAccent}</span>{brandingConfig.appName}
           </h1>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {isLoggedIn && subscription && (
+              <div className="hidden sm:flex items-center gap-3 bg-white/10 px-3 py-1.5 rounded-lg">
+                <div className="text-sm">
+                  <span className="font-bold text-white">{subscription.monthlyLimit - subscription.usedInCycle}</span>
+                  <span className="text-gray-400"> / {subscription.monthlyLimit} credits left</span>
+                </div>
+                <a
+                  href="/ghl-pricing-page.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                  aria-label="Upgrade plan"
+                >
+                  <UpgradeIcon className="w-4 h-4" />
+                  Upgrade
+                </a>
+              </div>
+            )}
             {isLoggedIn ? (
               <>
-                <button
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-200 bg-white/10 hover:bg-white/20"
-                  aria-label="Open branding settings"
+                 <button
+                  onClick={() => setIsHelpOpen(true)}
+                  className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label="Help"
                 >
-                  <UserCircleIcon className="w-5 h-5" />
-                  Settings
+                  <QuestionMarkIcon className="w-6 h-6" />
                 </button>
                 <button
-                  onClick={() => setIsLoggedIn(false)}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700"
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label="Open branding settings"
+                >
+                  <UserCircleIcon className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
                   aria-label="Log out"
                 >
-                  <LogoutIcon className="w-5 h-5" />
+                  <LogoutIcon className="w-6 h-6" />
                 </button>
               </>
             ) : (
               <>
                 <button
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="text-gray-300 hover:text-white transition-colors"
+                  onClick={() => setIsHelpOpen(true)}
+                  className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label="Help"
                 >
-                  Settings
+                  <QuestionMarkIcon className="w-6 h-6" />
                 </button>
                 <button
                   onClick={() => setAuthModal('login')}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-900 bg-white hover:bg-gray-200"
+                  className="hidden sm:inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
                   aria-label="Log in"
                 >
                   <LoginIcon className="w-5 h-5" />
@@ -452,11 +623,14 @@ function App() {
           onSave={handleSettingsSave}
         />
       )}
+      {isHelpOpen && (
+        <HelpModal onClose={() => setIsHelpOpen(false)} />
+      )}
       {authModal === 'login' && (
         <LoginModal 
             onClose={() => setAuthModal(null)}
             onSwitchToRegister={() => setAuthModal('register')}
-            onLoginSuccess={() => { setIsLoggedIn(true); setAuthModal(null); }}
+            onLoginSuccess={handleLoginSuccess}
         />
       )}
       {authModal === 'register' && (

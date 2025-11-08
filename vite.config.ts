@@ -1,6 +1,5 @@
 const { defineConfig, loadEnv } = require('vite');
 const react = require('@vitejs/plugin-react');
-// FIX: The 'process' object is globally available in Node.js, so this declaration is not needed and causes a redeclaration error.
 
 // https://vitejs.dev/config/
 module.exports = defineConfig(({ mode }) => {

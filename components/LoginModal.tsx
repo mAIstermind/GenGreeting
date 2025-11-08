@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { CloseIcon } from './icons/CloseIcon';
-import { LoginIcon } from './icons/LoginIcon';
+import { CloseIcon } from './icons/CloseIcon.tsx';
+import { LoginIcon } from './icons/LoginIcon.tsx';
 
 interface LoginModalProps {
     onClose: () => void;
@@ -18,16 +18,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSwitchToRegis
         e.preventDefault();
         setError('');
         setIsLoading(true);
-        // Placeholder for login logic
-        console.log("Attempting login with:", { email, password });
+        // Inform user that login is not available in demo
         setTimeout(() => {
-             // To test the flow, we'll simulate a successful login
-             console.log("Simulating successful login");
-             onLoginSuccess();
-            // In a real app, you would handle errors like this:
-            // setError('Invalid credentials. Please try again.');
-            // setIsLoading(false);
-        }, 1000);
+            setError('Login functionality is not available in this demo. Please use the free trial.');
+            setIsLoading(false);
+        }, 500);
     };
 
     return (
@@ -56,7 +51,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSwitchToRegis
                         />
                     </div>
                     <div>
-                        <label htmlFor="password" a-label="Password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Password
                         </label>
                         <input
