@@ -95,7 +95,7 @@ export const EditModal: React.FC<EditModalProps> = ({ card, onClose, onSave, gem
                             value={editPrompt}
                             onChange={(e) => setEditPrompt(e.target.value)}
                             placeholder="e.g., 'Add a retro filter' or 'Make the background blue'"
-                            className="w-full h-24 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            className="w-full h-24 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 dark:text-gray-100"
                             disabled={isEditing || !geminiService || !isOnline}
                         />
 

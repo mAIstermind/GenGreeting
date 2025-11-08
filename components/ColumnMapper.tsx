@@ -26,6 +26,27 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
     if (promptGuess) setPromptColumn(promptGuess);
   }, [headers]);
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setNameColumn(value);
+    if (value && value === emailColumn) setEmailColumn('');
+    if (value && value === promptColumn) setPromptColumn('');
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setEmailColumn(value);
+    if (value && value === nameColumn) setNameColumn('');
+    if (value && value === promptColumn) setPromptColumn('');
+  };
+  
+  const handlePromptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setPromptColumn(value);
+    if (value && value === nameColumn) setNameColumn('');
+    if (value && value === emailColumn) setEmailColumn('');
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isMappingValid) {
@@ -33,12 +54,7 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
     }
   };
 
-  const nameAndEmailSame = nameColumn && emailColumn && nameColumn === emailColumn;
-  const nameAndPromptSame = nameColumn && promptColumn && nameColumn === promptColumn;
-  const emailAndPromptSame = emailColumn && promptColumn && emailColumn === promptColumn;
-  const hasMappingConflict = nameAndEmailSame || nameAndPromptSame || emailAndPromptSame;
-
-  const isMappingValid = nameColumn && emailColumn && templateId && !hasMappingConflict;
+  const isMappingValid = nameColumn && emailColumn && templateId;
 
   const selectedTemplateText = promptTemplates.find(t => t.id === templateId)?.template.replace(/\${firstName}/g, '[Recipient Name]') || '';
 
@@ -61,7 +77,7 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
             <select
                 id="name-column"
                 value={nameColumn}
-                onChange={(e) => setNameColumn(e.target.value)}
+                onChange={handleNameChange}
                 className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
             >
                 <option value="">Select a column...</option>
@@ -79,7 +95,7 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
             <select
                 id="email-column"
                 value={emailColumn}
-                onChange={(e) => setEmailColumn(e.target.value)}
+                onChange={handleEmailChange}
                 className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
             >
                 <option value="">Select a column...</option>
@@ -97,7 +113,7 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
                 <select
                     id="prompt-column"
                     value={promptColumn}
-                    onChange={(e) => setPromptColumn(e.target.value)}
+                    onChange={handlePromptChange}
                     className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                 >
                     <option value="">Do not customize</option>
@@ -106,10 +122,6 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
                     ))}
                 </select>
             </div>
-
-            {hasMappingConflict && (
-              <p className="text-red-500 text-sm text-center">Name, Email, and Prompt columns must be unique.</p>
-            )}
         </fieldset>
 
         <div className="border-t border-gray-200 dark:border-gray-700"></div>
@@ -123,7 +135,7 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
                 id="template"
                 value={templateId}
                 onChange={(e) => setTemplateId(e.target.value)}
-                className="w-full p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors text-base"
+                className="w-full p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors text-base text-gray-900 dark:text-gray-100"
              >
                 {promptTemplates.map(template => (
                     <option key={template.id} value={template.id}>{template.name}</option>
