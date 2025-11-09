@@ -51,6 +51,11 @@ export default async function handler(req: any, res: any) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
+    // FIX: Add a critical validation check to prevent crashes on malformed requests.
+    if (!req.body) {
+        return res.status(400).json({ error: 'Missing or malformed request body.' });
+    }
+
     // Prioritize client-provided API key (for whitelabel agencies) over the default system key.
     const { action, apiKey: clientApiKey, ...payload } = req.body;
     const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
