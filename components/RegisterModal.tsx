@@ -1,7 +1,8 @@
 
+
 import React, { useState, useEffect } from 'react';
-import { CloseIcon } from './icons/CloseIcon.tsx';
-import type { User } from '../types.ts';
+import { CloseIcon } from './icons/CloseIcon';
+import type { User } from '../types';
 
 interface RegisterModalProps {
     onClose: () => void;

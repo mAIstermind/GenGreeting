@@ -1,8 +1,9 @@
 
+
 import React, { useState } from 'react';
-import { CloseIcon } from './icons/CloseIcon.tsx';
-import { LoginIcon } from './icons/LoginIcon.tsx';
-import type { User } from '../types.ts';
+import { CloseIcon } from './icons/CloseIcon';
+import { LoginIcon } from './icons/LoginIcon';
+import type { User } from '../types';
 
 interface LoginModalProps {
     onClose: () => void;

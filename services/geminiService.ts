@@ -1,6 +1,6 @@
 
 
-import type { AgencyConfig } from "../types.ts";
+import type { AgencyConfig } from "../types";
 
 const callApi = async (action: string, payload: object) => {
     

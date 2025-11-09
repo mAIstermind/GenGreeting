@@ -1,9 +1,9 @@
 
 
 import React from 'react';
-import type { GeneratedCard } from '../types.ts';
-import { DownloadIcon } from './icons/DownloadIcon.tsx';
-import { EditIcon } from './icons/EditIcon.tsx';
+import type { GeneratedCard } from '../types';
+import { DownloadIcon } from './icons/DownloadIcon';
+import { EditIcon } from './icons/EditIcon';
 
 interface GreetingCardProps {
   card: GeneratedCard;

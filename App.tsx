@@ -3,35 +3,35 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { FileUpload } from './components/FileUpload.tsx';
-import { ColumnMapper } from './components/ColumnMapper.tsx';
-import { CardGrid } from './components/CardGrid.tsx';
-import { ProgressBar } from './components/ProgressBar.tsx';
-import { Loader } from './components/Loader.tsx';
-import { EditModal } from './components/EditModal.tsx';
-import { SettingsModal } from './components/SettingsModal.tsx';
-import { LoginModal } from './components/LoginModal.tsx';
-import { RegisterModal } from './components/RegisterModal.tsx';
-import { HelpModal } from './components/HelpModal.tsx';
-import { TrialGenerator } from './components/TrialGenerator.tsx';
-import { PWAInstallBanner } from './components/PWAInstallBanner.tsx';
-import { PrivacyPolicyModal } from './components/PrivacyPolicyModal.tsx';
-import { TermsModal } from './components/TermsModal.tsx';
-import { CogIcon } from './components/icons/CogIcon.tsx';
-import { LoginIcon } from './components/icons/LoginIcon.tsx';
-import { LogoutIcon } from './components/icons/LogoutIcon.tsx';
-import { QuestionMarkIcon } from './components/icons/QuestionMarkIcon.tsx';
-import { UpgradeIcon } from './components/icons/UpgradeIcon.tsx';
-import { SunIcon } from './components/icons/SunIcon.tsx';
-import { MoonIcon } from './components/icons/MoonIcon.tsx';
-import { geminiService } from './services/geminiService.ts';
-import type { Contact, GeneratedCard, AgencyConfig } from './types.ts';
-import { ImageGenerator } from './components/ImageGenerator.tsx';
-import type { BrandingConfig } from './branding.ts';
-import { promptTemplates } from './promptTemplates.ts';
-import { GreetingCard } from './components/GreetingCard.tsx';
-import { UserCircleIcon } from './components/icons/UserCircleIcon.tsx';
-import { Footer } from './components/Footer.tsx';
+import { FileUpload } from './components/FileUpload';
+import { ColumnMapper } from './components/ColumnMapper';
+import { CardGrid } from './components/CardGrid';
+import { ProgressBar } from './components/ProgressBar';
+import { Loader } from './components/Loader';
+import { EditModal } from './components/EditModal';
+import { SettingsModal } from './components/SettingsModal';
+import { LoginModal } from './components/LoginModal';
+import { RegisterModal } from './components/RegisterModal';
+import { HelpModal } from './components/HelpModal';
+import { TrialGenerator } from './components/TrialGenerator';
+import { PWAInstallBanner } from './components/PWAInstallBanner';
+import { PwaInstallModal } from './components/PwaInstallModal';
+import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
+import { TermsModal } from './components/TermsModal';
+import { CogIcon } from './components/icons/CogIcon';
+import { LoginIcon } from './components/icons/LoginIcon';
+import { LogoutIcon } from './components/icons/LogoutIcon';
+import { QuestionMarkIcon } from './components/icons/QuestionMarkIcon';
+import { UpgradeIcon } from './components/icons/UpgradeIcon';
+import { SunIcon } from './components/icons/SunIcon';
+import { MoonIcon } from './components/icons/MoonIcon';
+import { geminiService } from './services/geminiService';
+import type { Contact, GeneratedCard, AgencyConfig } from './types';
+import { ImageGenerator } from './components/ImageGenerator';
+import type { BrandingConfig } from './branding';
+import { GreetingCard } from './components/GreetingCard';
+import { UserCircleIcon } from './components/icons/UserCircleIcon';
+import { Footer } from './components/Footer';
 
 type AppState = 'idle' | 'mapping' | 'generating' | 'done';
 type AuthModalState = 'login' | 'register' | null;
@@ -87,6 +87,7 @@ function App() {
   const [editingCard, setEditingCard] = useState<GeneratedCard | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isPwaInstallModalOpen, setIsPwaInstallModalOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [brandName, setBrandName] = useState(() => localStorage.getItem('brand_name') || '');
@@ -351,7 +352,7 @@ function App() {
     });
   };
 
-  const handleMap = (mapping: { name: string; profileImage: string }, promptTemplate: string) => {
+  const handleMap = (mapping: { name: string; email: string; profileImage: string }, promptTemplate: string) => {
     if (!csvFile) return;
 
     setError(null);
@@ -366,6 +367,7 @@ function App() {
       complete: async (results: any) => {
         let parsedContacts: Contact[] = results.data.map((row: any) => ({
           name: row[mapping.name] || '',
+          email: row[mapping.email] || '',
           profileImageUrl: mapping.profileImage ? row[mapping.profileImage] || '' : '',
         })).filter((c: Contact) => c.name);
         
@@ -376,7 +378,7 @@ function App() {
                 setError(
                     <span>
                         Your current plan has {remaining} generations left this cycle, but your spreadsheet has {parsedContacts.length} contacts.
-                        <a href="https://maistermind.com/ghl-pricing-page.html" target="_blank" rel="noopener noreferrer" className="font-bold text-blue-400 hover:underline ml-2">
+                        <a href="https://maistermind.com/gengreeting-pricing" target="_blank" rel="noopener noreferrer" className="font-bold text-blue-400 hover:underline ml-2">
                             Please upgrade your plan
                         </a>
                         &nbsp;or upload a smaller file.
@@ -406,8 +408,13 @@ function App() {
           const contact = parsedContacts[i];
           try {
             const firstName = contact.name.split(' ')[0];
-            const imagePrompt = promptTemplate.replace(/\${firstName}/g, firstName);
-            
+            const firstInitial = firstName.charAt(0).toUpperCase();
+
+            const imagePrompt = promptTemplate
+                .replace(/\${firstName}/g, firstName)
+                .replace(/\${firstInitial}/g, firstInitial)
+                .replace(/\${email}/g, contact.email || '');
+
             let imageUrl;
             if (contact.profileImageUrl) {
                 imageUrl = await geminiService.generatePersonalizedCard(imagePrompt, contact.profileImageUrl);
@@ -649,7 +656,7 @@ function App() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-                <a href="https://maistermind.com/ghl-pricing-page.html" target="_blank" rel="noopener noreferrer" className="hidden sm:inline-flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
+                <a href="https://maistermind.com/gengreeting-pricing" target="_blank" rel="noopener noreferrer" className="hidden sm:inline-flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
                     <UpgradeIcon className="w-5 h-5" />
                     Upgrade Plan
                 </a>
@@ -697,13 +704,18 @@ function App() {
       {editingCard && <EditModal card={editingCard} onClose={() => setEditingCard(null)} onSave={handleUpdateCard} geminiService={geminiService} isOnline={isOnline} />}
       {isSettingsOpen && <SettingsModal initialName={brandName} initialLogo={brandLogo} onClose={() => setIsSettingsOpen(false)} onSave={handleSettingsSave} />}
       {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}
+      {isPwaInstallModalOpen && <PwaInstallModal onClose={() => setIsPwaInstallModalOpen(false)} />}
       {isPrivacyOpen && <PrivacyPolicyModal onClose={() => setIsPrivacyOpen(false)} customContent={agencyLegal.privacy} />}
       {isTermsOpen && <TermsModal onClose={() => setIsTermsOpen(false)} customContent={agencyLegal.terms} />}
       
       {authModal === 'login' && <LoginModal onClose={() => setAuthModal(null)} onSwitchToRegister={() => setAuthModal('register')} onLoginSuccess={handleLoginSuccess} />}
       {authModal === 'register' && <RegisterModal onClose={() => setAuthModal(null)} onSwitchToLogin={() => setAuthModal('login')} onRegisterSuccess={handleRegisterSuccess} couponCodeFromUrl={couponCodeFromUrl} foreverCodeFromUrl={foreverCodeFromUrl} />}
 
-      <Footer onPrivacyClick={() => setIsPrivacyOpen(true)} onTermsClick={() => setIsTermsOpen(true)} />
+      <Footer 
+        onPrivacyClick={() => setIsPrivacyOpen(true)} 
+        onTermsClick={() => setIsTermsOpen(true)}
+        onDownloadAppClick={() => setIsPwaInstallModalOpen(true)}
+      />
     </div>
   );
 }

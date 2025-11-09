@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
-import { AgencyDashboard } from './components/AgencyDashboard.tsx';
+import App from './App';
+import { AgencyDashboard } from './components/AgencyDashboard';
 import './index.css';
 
 const rootElement = document.getElementById('root');

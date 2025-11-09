@@ -1,10 +1,11 @@
 
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { AgencyConfig } from '../types';
-import { CloseIcon } from './icons/CloseIcon.tsx';
-import { UploadIcon } from './icons/UploadIcon.tsx';
-import { LoginIcon } from './icons/LoginIcon.tsx';
-import { QuestionMarkIcon } from './icons/QuestionMarkIcon.tsx';
+import { CloseIcon } from './icons/CloseIcon';
+import { UploadIcon } from './icons/UploadIcon';
+import { LoginIcon } from './icons/LoginIcon';
+import { QuestionMarkIcon } from './icons/QuestionMarkIcon';
 
 const AGENCY_CONFIG_KEY = 'aigreetings_agency_config';
 const AGENCY_AUTH_KEY = 'aigreetings_agency_auth';

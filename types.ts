@@ -1,7 +1,10 @@
-import type { User } from "./auth.ts";
+
+import type { User } from "./auth";
 
 export interface Contact {
   name: string;
+  // FIX: Add optional 'email' property to support personalization and resolve type error.
+  email?: string;
   profileImageUrl?: string;
 }
 

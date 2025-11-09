@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import type { GeneratedCard } from '../types.ts';
-import { GreetingCard } from './GreetingCard.tsx';
-import { RefreshIcon } from './icons/RefreshIcon.tsx';
-import { ZipIcon } from './icons/ZipIcon.tsx';
-import { CheckIcon } from './icons/CheckIcon.tsx';
-import { Loader } from './Loader.tsx';
-import { ProgressBar } from './ProgressBar.tsx';
+import type { GeneratedCard } from '../types';
+import { GreetingCard } from './GreetingCard';
+import { RefreshIcon } from './icons/RefreshIcon';
+import { ZipIcon } from './icons/ZipIcon';
+import { CheckIcon } from './icons/CheckIcon';
+import { Loader } from './Loader';
+import { ProgressBar } from './ProgressBar';
 
 interface CardGridProps {
   cards: GeneratedCard[];

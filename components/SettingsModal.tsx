@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { CloseIcon } from './icons/CloseIcon.tsx';
-import { UploadIcon } from './icons/UploadIcon.tsx';
+import { CloseIcon } from './icons/CloseIcon';
+import { UploadIcon } from './icons/UploadIcon';
 
 interface SettingsModalProps {
     initialName: string;

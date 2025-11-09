@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import type { GeminiService } from '../services/geminiService.ts';
-import { SparklesIcon } from './icons/SparklesIcon.tsx';
-import { DownloadIcon } from './icons/DownloadIcon.tsx';
+import type { GeminiService } from '../services/geminiService';
+import { SparklesIcon } from './icons/SparklesIcon';
+import { DownloadIcon } from './icons/DownloadIcon';
 
 interface ImageGeneratorProps {
     geminiService: GeminiService | null;

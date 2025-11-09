@@ -1,12 +1,12 @@
 
 
 import React, { useState, useCallback } from 'react';
-import type { Contact, GeneratedCard } from '../types.ts';
-import type { GeminiService } from '../services/geminiService.ts';
-import { promptTemplates, defaultPromptTemplate } from '../promptTemplates.ts';
-import { GreetingCard } from './GreetingCard.tsx';
-import { Loader } from './Loader.tsx';
-import { SparklesIcon } from './icons/SparklesIcon.tsx';
+import type { Contact, GeneratedCard } from '../types';
+import type { GeminiService } from '../services/geminiService';
+import { promptTemplates, defaultPromptTemplate } from '../promptTemplates';
+import { GreetingCard } from './GreetingCard';
+import { Loader } from './Loader';
+import { SparklesIcon } from './icons/SparklesIcon';
 
 interface TrialGeneratorProps {
   geminiService: GeminiService;

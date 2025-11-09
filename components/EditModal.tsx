@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import type { GeneratedCard } from '../types.ts';
-import type { GeminiService } from '../services/geminiService.ts';
-import { CloseIcon } from './icons/CloseIcon.tsx';
-import { SparklesIcon } from './icons/SparklesIcon.tsx';
+import type { GeneratedCard } from '../types';
+import type { GeminiService } from '../services/geminiService';
+import { CloseIcon } from './icons/CloseIcon';
+import { SparklesIcon } from './icons/SparklesIcon';
 
 interface EditModalProps {
     card: GeneratedCard;

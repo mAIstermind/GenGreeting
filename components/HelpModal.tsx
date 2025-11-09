@@ -1,6 +1,7 @@
 
+
 import React, { useState } from 'react';
-import { CloseIcon } from './icons/CloseIcon.tsx';
+import { CloseIcon } from './icons/CloseIcon';
 
 interface HelpModalProps {
     onClose: () => void;
