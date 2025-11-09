@@ -1,4 +1,5 @@
 
+
 export interface PromptTemplate {
   id: string;
   name: string;
@@ -42,6 +43,20 @@ export const promptTemplates: PromptTemplate[] = [
     description: 'A minimalist scene showing hundreds of white paper airplanes, with a single red one flying the other way. A strong metaphor for being different.',
     template: `A minimalist scene showing hundreds of plain, white paper airplanes all flying in one direction. One single, brightly colored red paper airplane is flying in the opposite direction, creating a strong visual contrast. The text "It's tough to stand out. Did this get your attention, \${firstName}?" is placed in the empty space.`,
     thumbnail: `data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%231f2937'/%3e%3cpath d='M20 30l20-10l-5 10' fill='white'/%3e%3cpath d='M25 50l20-10l-5 10' fill='white'/%3e%3cpath d='M30 70l20-10l-5 10' fill='white'/%3e%3cpath d='M80 50l-20 10l5-10' fill='%23ef4444'/%3e%3c/svg%3e`,
+  },
+  {
+    id: 'office_birthday',
+    name: 'Office Birthday Bash',
+    description: 'A professional yet fun birthday card suitable for a colleague. Features office-related party elements.',
+    template: `A stylish and professional birthday card illustration for an office setting. It features subtle, festive elements like balloons in corporate colors (blue, gray, white) and a cupcake with a single candle on a clean desk. The text 'Happy Birthday, \${firstName}!' is written in a modern, friendly font. The overall mood is celebratory but still appropriate for the workplace.`,
+    thumbnail: `data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%231f2937'/%3e%3cpath d='M35 80 L 65 80 L 65 70 C 65 60, 35 60, 35 70 Z' fill='%239ca3af'/%3e%3cpath d='M40 70 L 60 70 L 60 65 L 40 65 Z' fill='%23d1d5db'/%3e%3cpath d='M50 65 L 50 50' stroke='white' stroke-width='3'/%3e%3cpath d='M49 48 L 51 48 L 51 45 C 51 42, 49 42, 49 45 Z' fill='%23fde047'/%3e%3ccircle cx='30' cy='30' r='10' fill='%2360a5fa' stroke='white' stroke-width='1'/%3e%3cpath d='M30 40 L 30 50' stroke='%2360a5fa' stroke-width='1'/%3e%3c/svg%3e`,
+  },
+  {
+    id: 'client_thank_you',
+    name: 'Client Appreciation',
+    description: 'A warm and professional thank you card. Features an elegant design to express gratitude to a client.',
+    template: `An elegant and professional 'Thank You' card design. It features a warm, abstract background with sophisticated typography. The text 'Thank you for your partnership, \${firstName}!' is prominently displayed in a beautiful script font. The design should convey gratitude and appreciation in a business context.`,
+    thumbnail: `data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%231f2937'/%3e%3cpath d='M30 30 L 70 30 L 70 70 L 30 70 Z' fill='%23374151' stroke='white' stroke-width='1'/%3e%3cpath d='M35 40 L 65 40' stroke='%239ca3af' stroke-width='2'/%3e%3cpath d='M35 50 L 55 50' stroke='%239ca3af' stroke-width='2'/%3e%3cpath d='M35 60 L 60 60' stroke='%239ca3af' stroke-width='2'/%3e%3cpath d='M60 55 L 75 70 L 80 65 L 65 50 Z' fill='%23d1d5db'/%3e%3cpath d='M58 52 L 70 40 L 72 42 L 60 54 Z' fill='%233b82f6'/%3e%3c/svg%3e`,
   },
   {
     id: 'birthday_pop',
@@ -94,4 +109,5 @@ export const promptTemplates: PromptTemplate[] = [
   }
 ];
 
+// FIX: Export 'defaultPromptTemplate' to be used for default state in components.
 export const defaultPromptTemplate = promptTemplates[0];
