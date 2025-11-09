@@ -22,10 +22,10 @@ export const Footer: React.FC<FooterProps> = ({ onPrivacyClick, onTermsClick, on
                      <button onClick={onDownloadAppClick} className="hover:text-gray-900 dark:hover:text-white transition-colors">
                         Download App
                     </button>
-                     <a href="/ghl-affiliate-page.html" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 dark:hover:text-white transition-colors">
+                     <a href="https://maistermind.com/gengreeting-affiliate" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 dark:hover:text-white transition-colors">
                         Affiliates
                     </a>
-                    <a href="/agency-sales-page.html" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <a href="https://maistermind.com/gengreeting-agency" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 dark:hover:text-white transition-colors">
                         Agency Program
                     </a>
                 </div>
