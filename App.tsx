@@ -63,7 +63,8 @@ const DEFAULT_PLANS = {
   agency: { name: 'Agency', limit: 10000 },
 };
 
-const TRIAL_LIMIT = 10;
+const REGISTERED_TRIAL_LIMIT = 10;
+const UNREGISTERED_TRIAL_LIMIT = 1;
 const TRIAL_STORAGE_KEY = 'aigreetings_trial_count';
 const SUBSCRIPTION_STORAGE_KEY = 'aigreetings_subscription';
 const THEME_STORAGE_KEY = 'aigreetings_theme';
@@ -197,7 +198,7 @@ function App() {
       // All new registrations start on a free trial plan
       const newSub: Subscription = {
           planName: 'Trial',
-          monthlyLimit: TRIAL_LIMIT, // 10 generations for free trial
+          monthlyLimit: REGISTERED_TRIAL_LIMIT, // 10 generations for free trial
           ...(isBetaTester && { bonusCredits: 1000 }),
           ...(hasForeverBonus && { foreverBonus: 50 }),
           cycleStartDate: Date.now(),
@@ -351,7 +352,7 @@ function App() {
     });
   };
 
-  const handleMap = (mapping: { name: string; email: string; profileImage: string }, templateId: string) => {
+  const handleMap = (mapping: { name: string; email: string; profileImage: string }, promptTemplate: string) => {
     if (!csvFile) return;
 
     setError(null);
@@ -400,18 +401,11 @@ function App() {
           return;
         }
 
-        const selectedTemplate = promptTemplates.find(t => t.id === templateId);
-        if (!selectedTemplate) {
-            setError("The selected image style template could not be found.");
-            setAppState('idle');
-            return;
-        }
-        
-        const templateRequiresEmail = selectedTemplate.template.includes('${email}');
+        const templateRequiresEmail = promptTemplate.includes('${email}');
         if (templateRequiresEmail && !mapping.email) {
             setError(
                 <span>
-                    The selected image style (<span className="font-semibold">{selectedTemplate.name}</span>) requires an 'email' column, but none was mapped. 
+                    The selected image style requires an 'email' column, but none was mapped. 
                     Please go back and map the email column or choose a different style.
                 </span>
             );
@@ -428,7 +422,7 @@ function App() {
           try {
             const firstName = contact.name.split(' ')[0];
             const firstInitial = firstName.charAt(0).toUpperCase();
-            let imagePrompt = selectedTemplate.template
+            let imagePrompt = promptTemplate
                 .replace(/\${firstName}/g, firstName)
                 .replace(/\${firstInitial}/g, firstInitial);
 
@@ -516,390 +510,231 @@ function App() {
     setProgress(0);
     setError(null);
     setPreviewCard(null);
+    setActiveTab('csv');
   };
 
-  const handleEditSave = (updatedCard: GeneratedCard) => {
-    setGeneratedCards(prev => prev.map(c => c.name === updatedCard.name && c.email === updatedCard.email ? updatedCard : c));
+  const handleEditCard = (card: GeneratedCard) => {
+    setEditingCard(card);
+  };
+
+  const handleUpdateCard = (updatedCard: GeneratedCard) => {
+    setGeneratedCards(currentCards => 
+      currentCards.map(c => (c.name === updatedCard.name && c.email === updatedCard.email && c.imageUrl === editingCard?.imageUrl) ? updatedCard : c)
+    );
     setEditingCard(null);
   };
 
-  const handleDownloadAll = async () => {
-    if (!isLoggedIn) {
-      alert("Please log in or register to download your cards and unlock custom branding.");
-      setAuthModal('login');
-      return;
-    }
+  const handleDownloadAll = useCallback(async () => {
+    if (generatedCards.length === 0) return;
 
-    const zip = new JSZip();
-    setIsBranding(true);
+    const useBranding = (brandName || brandLogo) && isLoggedIn;
+    setIsBranding(useBranding);
     setProgress(0);
 
-    const cardsToZip = [...generatedCards];
-    const downloadErrors: string[] = [];
-    
-    if (brandName || brandLogo) {
-      if (isLoggedIn && subscription) {
-        const totalCredits = subscription.monthlyLimit + (subscription.bonusCredits || 0) + (subscription.foreverBonus || 0);
-        const remaining = totalCredits - subscription.usedInCycle;
-        if (generatedCards.length > remaining) {
-          alert(`Applying branding requires ${generatedCards.length} credits, but you only have ${remaining} left. Please upgrade your plan or download without applying branding.`);
-          setIsBranding(false);
-          return;
-        }
-      }
-      for (let i = 0; i < cardsToZip.length; i++) {
-          try {
-            const brandedImageUrl = await geminiService.brandCardImage(cardsToZip[i].imageUrl, brandLogo, brandName, 'bottom-right');
-            cardsToZip[i] = { ...cardsToZip[i], imageUrl: brandedImageUrl };
-            
-             setSubscription(prev => {
-                if (!prev) return null;
-                const newSub = { ...prev, usedInCycle: prev.usedInCycle + 1 };
-                localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(newSub));
-                return newSub;
-              });
+    const zip = new JSZip();
+    for (let i = 0; i < generatedCards.length; i++) {
+        const card = generatedCards[i];
+        let cardDataUrl = card.imageUrl;
 
-          } catch (e) {
-            console.error("Failed to brand image for", cardsToZip[i].name);
-            downloadErrors.push(cardsToZip[i].name);
-          }
-          setProgress(((i + 1) / cardsToZip.length) * 50);
-      }
-    }
-    
-    for (let i = 0; i < cardsToZip.length; i++) {
-        const card = cardsToZip[i];
-        try {
-            const response = await fetch(card.imageUrl);
-            if (!response.ok) {
-                console.warn(`Skipping failed image fetch for ${card.name} (status: ${response.status})`);
-                downloadErrors.push(card.name);
-                continue;
-            }
-            const blob = await response.blob();
-            const safeFileName = card.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            zip.file(`greeting_card_${safeFileName}.png`, blob);
-        } catch (err) {
-            console.error(`Error processing or adding card for ${card.name} to zip:`, err);
-            downloadErrors.push(card.name);
-        } finally {
-            setProgress(50 + (((i + 1) / cardsToZip.length) * 50));
-        }
-    }
-
-    if (downloadErrors.length > 0) {
-        alert(`Could not include cards for the following contacts in the ZIP file: ${[...new Set(downloadErrors)].join(', ')}. Please check your connection or try downloading them individually.`);
-    }
-
-    zip.generateAsync({ type: 'blob' }).then((content: any) => {
-      saveAs(content, 'greeting_cards.zip');
-      setIsBranding(false);
-      setProgress(0);
-    });
-  };
-  
-  const renderLoggedInContent = () => {
-    const totalCredits = subscription ? (subscription.monthlyLimit + (subscription.bonusCredits || 0) + (subscription.foreverBonus || 0)) : 0;
-    const remainingCredits = subscription ? (totalCredits - subscription.usedInCycle) : 0;
-    const isDisabled = appState !== 'idle' || !isOnline;
-
-    const CSV_CONTENT = (
-        <>
-            {(() => {
-                switch (appState) {
-                    case 'idle':
-                        return (
-                            <>
-                                <div className="text-center max-w-3xl mx-auto mb-10">
-                                    <h2 className="text-4xl font-extrabold text-white tracking-tight sm:text-5xl">
-                                        Create Personalized Cards in Bulk
-                                    </h2>
-                                    <p className="mt-4 text-xl text-gray-400">
-                                        Upload a CSV with your contact list, choose a style, and let AI generate a unique visual for every person. Perfect for outreach, event invites, and holiday greetings.
-                                    </p>
-                                </div>
-                                <FileUpload onFileSelect={handleFileSelect} disabled={isDisabled} />
-                            </>
-                        );
-                    case 'mapping':
-                        return <ColumnMapper headers={csvHeaders} onMap={handleMap} onCancel={handleCancelMap} fileName={csvFile?.name || ''} />;
-                    case 'generating':
-                        return (
-                        <div className="w-full max-w-4xl mx-auto text-center">
-                            <h2 className="text-3xl font-bold text-white mb-4">Generating Your Cards...</h2>
-                            <p className="text-gray-300 mb-8">This can take a few moments. Feel free to watch the progress.</p>
-                            
-                            {previewCard && (
-                                <div className="mb-8 max-w-xs mx-auto animate-fade-in">
-                                    <p className="text-sm text-gray-400 mb-2">First card preview:</p>
-                                    <div className="pointer-events-none">
-                                        <GreetingCard card={previewCard} onEdit={() => {}} isPreview={true} />
-                                    </div>
-                                    <style>{`
-                                        @keyframes fade-in {
-                                            from { opacity: 0; transform: scale(0.95); }
-                                            to { opacity: 1; transform: scale(1); }
-                                        }
-                                        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
-                                    `}</style>
-                                </div>
-                            )}
-
-                            <ProgressBar progress={progress} />
-                            <p className="mt-2 text-sm text-gray-400">{generatedCards.length} of {contacts.length} cards generated.</p>
-                        </div>
-                        );
-                    case 'done':
-                        return (
-                            <CardGrid
-                                cards={generatedCards}
-                                onEditCard={(card) => setEditingCard(card)}
-                                onDownloadAll={handleDownloadAll}
-                                onReset={handleReset}
-                                isBranding={isBranding}
-                                brandingProgress={isBranding ? progress : 0}
-                                brandName={brandName}
-                                brandLogo={brandLogo}
-                                isLoggedIn={isLoggedIn}
-                                isOnline={isOnline}
-                            />
-                        );
-                    default:
-                        return null;
-                }
-            })()}
-        </>
-    );
-     const TABS = {
-        csv: {
-            name: 'Batch Generate via CSV',
-            content: CSV_CONTENT,
-        },
-        single: {
-            name: 'Generate with Imagen',
-            content: <ImageGenerator 
-                geminiService={geminiService} 
-                isOnline={isOnline} 
-                remainingCredits={remainingCredits}
-                onGenerationComplete={() => {
-                    if (isLoggedIn && subscription) {
-                        setSubscription(prev => {
+        if (useBranding) {
+            try {
+                cardDataUrl = await geminiService.brandCardImage(card.imageUrl, brandLogo, brandName, 'bottom-right');
+                if (isLoggedIn && subscription) {
+                    setSubscription(prev => {
                         if (!prev) return null;
                         const newSub = { ...prev, usedInCycle: prev.usedInCycle + 1 };
                         localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(newSub));
                         return newSub;
-                        });
-                    }
-                }}
-            />,
+                    });
+                }
+            } catch (e: any) {
+                console.error(`Failed to brand card for ${card.name}: ${e.message}`);
+            }
         }
-    };
-    return (
-        <>
-            <div className="mb-8 border-b border-gray-700">
-                <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                {Object.entries(TABS).map(([key, tab]) => (
-                    <button
-                    key={key}
-                    onClick={() => setActiveTab(key as 'csv' | 'single')}
-                    className={`
-                        whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg
-                        ${activeTab === key
-                            ? 'border-blue-500 text-blue-400'
-                            : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
-                        }
-                    `}
-                    >
-                    {tab.name}
-                    </button>
-                ))}
-                </nav>
-            </div>
-            {TABS[activeTab].content}
-        </>
-    );
-  };
-
-  const renderLoggedOutContent = () => {
-     const remainingGenerations = 1 - trialGenerationsUsed;
-
-    if (remainingGenerations <= 0) {
-        return (
-            <div className="text-center bg-gray-800 p-8 rounded-lg max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold text-white mb-4">
-                You've used your one free generation.
-            </h2>
-            <p className="text-gray-300 mb-6">
-                To continue generating, please register for a free account to get 10 more generations and unlock batch CSV uploads.
-            </p>
-             <button
-                onClick={() => setAuthModal('register')}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
-            >
-                Register for Free
-            </button>
-            </div>
-        );
+        
+        const response = await fetch(cardDataUrl);
+        const blob = await response.blob();
+        const safeFileName = card.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        zip.file(`greeting_card_${safeFileName}.png`, blob);
+        
+        if (useBranding) {
+            setProgress(((i + 1) / generatedCards.length) * 100);
+        }
     }
 
-    return <TrialGenerator 
-        geminiService={geminiService}
-        isOnline={isOnline}
-        onGenerationComplete={handleTrialGeneration}
-        onEditCard={(card) => setEditingCard(card)}
-        remainingGenerations={remainingGenerations}
-     />;
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    saveAs(zipBlob, 'greeting_cards.zip');
+    setIsBranding(false);
+    setProgress(0);
+
+  }, [generatedCards, brandName, brandLogo, isLoggedIn, subscription]);
+
+
+  const remainingGenerations = isLoggedIn && subscription 
+    ? (subscription.monthlyLimit + (subscription.bonusCredits || 0) + (subscription.foreverBonus || 0)) - subscription.usedInCycle 
+    : UNREGISTERED_TRIAL_LIMIT - trialGenerationsUsed;
+
+  const renderContent = () => {
+    switch (appState) {
+      case 'idle':
+        return (
+          <div className="space-y-8">
+            <div className="flex justify-center border-b border-gray-200 dark:border-gray-700">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button onClick={() => setActiveTab('csv')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg ${activeTab === 'csv' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
+                        Batch Generate via CSV
+                    </button>
+                    <button onClick={() => setActiveTab('single')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg ${activeTab === 'single' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
+                        Generate a Single Image
+                    </button>
+                </nav>
+            </div>
+            {activeTab === 'csv' ? (
+              isLoggedIn ? (
+                <FileUpload onFileSelect={handleFileSelect} disabled={appState !== 'idle'} />
+              ) : (
+                <TrialGenerator
+                    geminiService={geminiService}
+                    isOnline={isOnline}
+                    onGenerationComplete={handleTrialGeneration}
+                    onEditCard={handleEditCard}
+                    remainingGenerations={remainingGenerations}
+                    onRequestRegister={() => setAuthModal('register')}
+                    registeredTrialLimit={REGISTERED_TRIAL_LIMIT}
+                 />
+              )
+            ) : (
+              <ImageGenerator 
+                geminiService={geminiService} 
+                isOnline={isOnline}
+                remainingCredits={remainingGenerations}
+                onGenerationComplete={() => {
+                   if (isLoggedIn && subscription) {
+                      setSubscription(prev => {
+                        if (!prev) return null;
+                        const newSub = { ...prev, usedInCycle: prev.usedInCycle + 1 };
+                        localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(newSub));
+                        return newSub;
+                      });
+                    } else {
+                      handleTrialGeneration();
+                    }
+                }}
+              />
+            )}
+          </div>
+        );
+      case 'mapping':
+        return <ColumnMapper headers={csvHeaders} onMap={handleMap} onCancel={handleCancelMap} fileName={csvFile?.name || ''} />;
+      case 'generating':
+        return (
+          <div className="text-center text-white">
+            <h2 className="text-2xl font-bold mb-4">Generating Your Cards...</h2>
+            <p className="mb-4 text-gray-300">This may take a few moments. Please don't close this window.</p>
+            {previewCard && (
+                <div className="max-w-sm mx-auto my-4 opacity-50">
+                    <p className="text-sm mb-2">First card preview:</p>
+                    <GreetingCard card={previewCard} onEdit={() => {}} isPreview={true} />
+                </div>
+            )}
+            <ProgressBar progress={progress} />
+            <div className="mt-4">
+              <Loader />
+            </div>
+          </div>
+        );
+      case 'done':
+        return <CardGrid 
+            cards={generatedCards} 
+            onEditCard={handleEditCard}
+            onDownloadAll={handleDownloadAll}
+            onReset={handleReset}
+            isBranding={isBranding}
+            brandingProgress={progress}
+            brandName={brandName}
+            brandLogo={brandLogo}
+            isLoggedIn={isLoggedIn}
+            isOnline={isOnline}
+         />;
+      default:
+        return null;
+    }
   };
 
-  if (!brandingConfig || isInitializing) {
-    return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center text-gray-800 dark:text-white">
-            <svg className="animate-spin h-10 w-10 text-gray-600 dark:text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p>Loading application...</p>
-        </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-sans flex flex-col">
-      <header className="py-4 px-4 sm:px-6 lg:px-8 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            {brandingConfig.logo && <img src={brandingConfig.logo} alt="Brand Logo" className="h-8 w-8 object-contain rounded-md" />}
-            <h1 className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-white">
-              <span className="text-blue-600 dark:text-blue-400">{brandingConfig.appAccent}</span>{brandingConfig.appName}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            {isLoggedIn && subscription && (
-              <div className="hidden sm:flex items-center gap-3 bg-gray-100 dark:bg-white/10 px-3 py-1.5 rounded-lg">
-                <div className="text-sm">
-                    <span className="font-bold text-gray-900 dark:text-white">{(subscription.monthlyLimit + (subscription.bonusCredits || 0) + (subscription.foreverBonus || 0)) - subscription.usedInCycle}</span>
-                    <span className="text-gray-500 dark:text-gray-400"> / {subscription.monthlyLimit + (subscription.bonusCredits || 0) + (subscription.foreverBonus || 0)} credits left</span>
-                </div>
-                <a
-                  href="/ghl-pricing-page.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
-                  aria-label="Upgrade plan"
-                >
-                  <UpgradeIcon className="w-4 h-4" />
-                  Upgrade
-                </a>
+    <div className={`flex flex-col min-h-screen font-sans antialiased ${theme === 'dark' ? 'dark bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-800'}`}>
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0 text-2xl font-bold">
+                 {brandingConfig && (
+                    <>
+                        <span className="text-blue-600 dark:text-blue-400">{brandingConfig.appAccent}</span>
+                        <span>{brandingConfig.appName}</span>
+                    </>
+                 )}
               </div>
-            )}
-             <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-white/10 transition-colors"
-              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            >
-              {theme === 'dark' ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
-            </button>
-            {isLoggedIn ? (
-              <>
-                 <button
-                  onClick={() => setIsHelpOpen(true)}
-                  className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-white/10 transition-colors"
-                  aria-label="Help"
-                >
-                  <QuestionMarkIcon className="w-6 h-6" />
+            </div>
+            <div className="flex items-center gap-2">
+                <a href="/ghl-pricing-page.html" target="_blank" rel="noopener noreferrer" className="hidden sm:inline-flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
+                    <UpgradeIcon className="w-5 h-5" />
+                    Upgrade Plan
+                </a>
+                <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                    {theme === 'dark' ? <SunIcon className="w-6 h-6"/> : <MoonIcon className="w-6 h-6"/>}
                 </button>
-                <button
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-white/10 transition-colors"
-                  aria-label="Settings"
-                >
-                  <UserCircleIcon className="w-6 h-6" />
+                 <button onClick={() => setIsHelpOpen(true)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <QuestionMarkIcon className="w-6 h-6" />
                 </button>
-                <button
-                  onClick={handleLogout}
-                  className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-white/10 transition-colors"
-                  aria-label="Logout"
-                >
-                  <LogoutIcon className="w-6 h-6" />
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => setAuthModal('login')}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
-              >
-                <LoginIcon className="w-5 h-5" />
-                Login / Register
-              </button>
-            )}
+                {isLoggedIn ? (
+                    <>
+                         <button onClick={() => setIsSettingsOpen(true)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                             {brandLogo ? <img src={brandLogo} alt="Brand Logo" className="w-6 h-6 rounded-full object-cover" /> : <UserCircleIcon className="w-6 h-6"/>}
+                         </button>
+                        <button onClick={handleLogout} className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                           <LogoutIcon className="w-6 h-6" />
+                           <span className="hidden sm:inline">Logout</span>
+                        </button>
+                    </>
+                ) : (
+                    <button onClick={() => setAuthModal('login')} className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                       <LoginIcon className="w-6 h-6" />
+                       <span className="hidden sm:inline">Login / Register</span>
+                    </button>
+                )}
+            </div>
           </div>
         </div>
       </header>
-      <main className="flex-grow py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          {!isOnline && (
-            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-8 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-600" role="alert">
-              <p className="font-bold">You are currently offline.</p>
-              <p>Some features, like image generation, may be unavailable.</p>
-            </div>
-          )}
-          {error && (
-            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-8 dark:bg-red-900/50 dark:text-red-300 dark:border-red-600" role="alert">
-              <p className="font-bold">An Error Occurred</p>
-              <div className="text-sm">{error}</div>
-            </div>
-          )}
-          
-          {isLoggedIn ? renderLoggedInContent() : renderLoggedOutContent()}
+
+      <main className="flex-grow">
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+           {error && (
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6 dark:bg-red-900/50 dark:border-red-600 dark:text-red-300" role="alert">
+                <p className="font-bold">An Error Occurred</p>
+                <div className="text-sm">{error}</div>
+              </div>
+            )}
+            {isInitializing ? <div className="text-center p-10"><Loader /></div> : renderContent()}
         </div>
       </main>
-      
-      <Footer onPrivacyClick={() => setIsPrivacyOpen(true)} onTermsClick={() => setIsTermsOpen(true)} />
 
-      {editingCard && (
-        <EditModal 
-            card={editingCard} 
-            onClose={() => setEditingCard(null)} 
-            onSave={handleEditSave} 
-            geminiService={geminiService}
-            isOnline={isOnline}
-        />
-      )}
-      {isSettingsOpen && (
-        <SettingsModal 
-            initialName={brandName}
-            initialLogo={brandLogo}
-            onClose={() => setIsSettingsOpen(false)}
-            onSave={handleSettingsSave}
-        />
-      )}
-       {authModal === 'login' && (
-        <LoginModal
-          onClose={() => setAuthModal(null)}
-          onSwitchToRegister={() => setAuthModal('register')}
-          onLoginSuccess={handleLoginSuccess}
-        />
-      )}
-      {authModal === 'register' && (
-        <RegisterModal
-          onClose={() => setAuthModal(null)}
-          onSwitchToLogin={() => setAuthModal('login')}
-          onRegisterSuccess={handleRegisterSuccess}
-          couponCodeFromUrl={couponCodeFromUrl}
-          foreverCodeFromUrl={foreverCodeFromUrl}
-        />
-      )}
+       {showInstallBanner && <PWAInstallBanner onInstall={handleInstallPrompt} onDismiss={() => setShowInstallBanner(false)} />}
+      
+      {editingCard && <EditModal card={editingCard} onClose={() => setEditingCard(null)} onSave={handleUpdateCard} geminiService={geminiService} isOnline={isOnline} />}
+      {isSettingsOpen && <SettingsModal initialName={brandName} initialLogo={brandLogo} onClose={() => setIsSettingsOpen(false)} onSave={handleSettingsSave} />}
       {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}
       {isPrivacyOpen && <PrivacyPolicyModal onClose={() => setIsPrivacyOpen(false)} customContent={agencyLegal.privacy} />}
       {isTermsOpen && <TermsModal onClose={() => setIsTermsOpen(false)} customContent={agencyLegal.terms} />}
-      {showInstallBanner && (
-        <PWAInstallBanner 
-            onInstall={handleInstallPrompt}
-            onDismiss={() => setShowInstallBanner(false)}
-        />
-      )}
+      
+      {authModal === 'login' && <LoginModal onClose={() => setAuthModal(null)} onSwitchToRegister={() => setAuthModal('register')} onLoginSuccess={handleLoginSuccess} />}
+      {authModal === 'register' && <RegisterModal onClose={() => setAuthModal(null)} onSwitchToLogin={() => setAuthModal('login')} onRegisterSuccess={handleRegisterSuccess} couponCodeFromUrl={couponCodeFromUrl} foreverCodeFromUrl={foreverCodeFromUrl} />}
+
+      <Footer onPrivacyClick={() => setIsPrivacyOpen(true)} onTermsClick={() => setIsTermsOpen(true)} />
     </div>
   );
 }
 
+// FIX: Added default export to the App component.
 export default App;

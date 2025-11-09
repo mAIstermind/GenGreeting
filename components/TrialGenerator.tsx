@@ -13,6 +13,8 @@ interface TrialGeneratorProps {
   onGenerationComplete: () => void;
   onEditCard: (card: GeneratedCard) => void;
   remainingGenerations: number;
+  onRequestRegister: () => void;
+  registeredTrialLimit: number;
 }
 
 const randomNames = ['Alex', 'Jordan', 'Taylor', 'Casey', 'Sam', 'Jamie'];
@@ -22,7 +24,9 @@ export const TrialGenerator: React.FC<TrialGeneratorProps> = ({
   isOnline,
   onGenerationComplete,
   onEditCard,
-  remainingGenerations
+  remainingGenerations,
+  onRequestRegister,
+  registeredTrialLimit,
 }) => {
   const [name, setName] = useState('');
   const [templateId, setTemplateId] = useState(defaultPromptTemplate.id);
@@ -31,7 +35,7 @@ export const TrialGenerator: React.FC<TrialGeneratorProps> = ({
   const [generatedCard, setGeneratedCard] = useState<GeneratedCard | null>(null);
 
   const generateCard = useCallback(async (nameToGen: string, templateIdToGen: string) => {
-    if (!nameToGen.trim() || !templateIdToGen || !isOnline) return;
+    if (!nameToGen.trim() || !templateIdToGen || !isOnline || remainingGenerations <= 0) return;
 
     setIsLoading(true);
     setError(null);
@@ -58,7 +62,7 @@ export const TrialGenerator: React.FC<TrialGeneratorProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [geminiService, isOnline, onGenerationComplete]);
+  }, [geminiService, isOnline, onGenerationComplete, remainingGenerations]);
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -80,6 +84,7 @@ export const TrialGenerator: React.FC<TrialGeneratorProps> = ({
     setError(null);
   };
 
+  // Always show the generated card if it exists. This is the highest priority.
   if (generatedCard) {
     return (
       <div className="max-w-md mx-auto flex flex-col items-center gap-6">
@@ -95,6 +100,26 @@ export const TrialGenerator: React.FC<TrialGeneratorProps> = ({
     );
   }
 
+  // If the user is out of generations, show a prompt to register.
+  if (remainingGenerations <= 0) {
+      return (
+          <div className="w-full max-w-2xl mx-auto text-center bg-gray-800 rounded-xl shadow-lg border border-gray-700 p-8">
+              <h2 className="text-2xl font-bold text-white mb-2">You've used your free generation.</h2>
+              <p className="text-gray-400 mb-6">
+                  To continue generating, please register for a free account. You'll get {registeredTrialLimit} more generations and unlock batch CSV uploads.
+              </p>
+              <button
+                  onClick={onRequestRegister}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+              >
+                  Register for Free
+              </button>
+          </div>
+      );
+  }
+
+
+  // Otherwise, show the generation form.
   return (
     <div className="w-full max-w-4xl mx-auto bg-gray-800 rounded-xl shadow-lg border border-gray-700 p-8">
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -104,7 +129,7 @@ export const TrialGenerator: React.FC<TrialGeneratorProps> = ({
                 Get a taste of what our platform can do. Enter a name, choose a style, and create a unique, attention-grabbing image. Register to unlock batch CSV uploads and custom branding.
             </p>
             <p className="text-center text-sm text-gray-300 mt-4">
-                You have <strong className="text-white">{remainingGenerations}</strong> free generations remaining.
+                You have <strong className="text-white">{remainingGenerations}</strong> free generation{remainingGenerations !== 1 ? 's' : ''} remaining.
             </p>
         </div>
         
@@ -150,7 +175,7 @@ export const TrialGenerator: React.FC<TrialGeneratorProps> = ({
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
            <button
             type="button"
-            disabled={isLoading || !isOnline}
+            disabled={isLoading || !isOnline || remainingGenerations <= 0}
             onClick={handleSurpriseMe}
             className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-gray-500 text-base font-medium rounded-md shadow-sm text-gray-200 bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
           >
@@ -158,7 +183,7 @@ export const TrialGenerator: React.FC<TrialGeneratorProps> = ({
           </button>
           <button
             type="submit"
-            disabled={!name.trim() || !templateId || isLoading || !isOnline}
+            disabled={!name.trim() || !templateId || isLoading || !isOnline || remainingGenerations <= 0}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 border border-transparent text-lg font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 disabled:bg-gray-500 disabled:cursor-not-allowed"
           >
             {isLoading ? <Loader /> : <> <SparklesIcon className="w-6 h-6" /> Generate Card </>}

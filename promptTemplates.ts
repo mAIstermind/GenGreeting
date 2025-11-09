@@ -113,6 +113,13 @@ export const promptTemplates: PromptTemplate[] = [
     description: 'A clean, modern, and professional image featuring the recipient\'s name and email. Useful for creating personalized branding assets.',
     template: `Create a professional and stylish email signature image. It should prominently feature the name "\${firstName}". Also, subtly and elegantly, include the email address "\${email}". The design should be clean, modern, and suitable for a business context. Do not include any other text besides the name and email.`,
     thumbnail: `data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%231f2937'/%3e%3crect x='25' y='35' width='50' height='2' fill='white'/%3e%3crect x='25' y='65' width='50' height='2' fill='white'/%3e%3ctext x='50' y='55' font-size='12' fill='white' text-anchor='middle' font-family='Arial'%3eSIGNATURE%3c/text%3e%3c/svg%3e`,
+  },
+  {
+    id: 'welcome_banner',
+    name: 'Personalized Welcome Banner',
+    description: 'Creates a sleek, modern banner for welcome emails, featuring the contact\'s name and confirming their email address.',
+    template: `Create a professional and clean welcome banner image suitable for an email header. The design should be modern and minimalist, with a cool color palette (blues, grays). The banner must prominently feature the text "Welcome Aboard, \${firstName}!". Below this main text, in a smaller, clean font, include the confirmation text: "Your access has been granted for \${email}". The overall aesthetic should be professional and welcoming, suitable for a SaaS product or online service. Do not include any other text.`,
+    thumbnail: `data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%231f2937'/%3e%3crect x='10' y='30' width='80' height='40' rx='5' fill='%23374151'/%3e%3cpath d='M10 40 Q 50 20, 90 40' stroke='%233b82f6' stroke-width='2' fill='none'/%3e%3ctext x='50' y='50' font-size='10' fill='white' text-anchor='middle' font-family='Arial' font-weight='bold'%3eWelcome!%3c/text%3e%3ctext x='50' y='62' font-size='6' fill='%23d1d5db' text-anchor='middle' font-family='Arial'%3eemail@example.com%3c/text%3e%3c/svg%3e`,
   }
 ];
 
