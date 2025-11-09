@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CloseIcon } from './icons/CloseIcon.tsx';
 
@@ -28,12 +29,12 @@ const UserGuide = () => (
         <H3>2. Generating Cards in Bulk (via CSV)</H3>
         <P>This is the perfect tool for creating personalized cards for your entire contact list at once.</P>
         <UL>
-            <LI><Strong>Step 1: Prepare Your CSV File.</Strong> Create a CSV file with columns for names and emails. You can also include other columns for more detailed personalization, like "Job Title", "Hobby", or "City".</LI>
+            <LI><Strong>Step 1: Prepare Your CSV File.</Strong> Create a CSV with at least a <Code>name</Code> column. Optionally, add a second column with a public URL to a logo or profile picture for each person.</LI>
             <LI><Strong>Step 2: Upload Your File.</Strong> On the "Batch Generate via CSV" tab, click or drag-and-drop your prepared CSV file into the upload area.</LI>
-            <LI><Strong>Step 3: Map Your Columns.</Strong> Tell the app which column contains names and which contains emails by selecting them from the dropdowns.</LI>
-            <LI><Strong>Step 4 (Optional): Add Theme Customization.</Strong> Use the "Theme Customization" dropdown to select another column from your CSV. This adds extra detail to each card. For example, if you have a "Hobby" column, the AI will incorporate each person's hobby into their unique image.</LI>
-            <LI><Strong>Step 5: Choose a Style with Visual Previews.</Strong> Instead of a list, you'll see a grid of thumbnails. Click a thumbnail to select that style. A text preview of the prompt will appear below the grid.</LI>
-            <LI><Strong>Step 6: Generate & Download.</Strong> Click "Confirm & Proceed". Once finished, download cards one by one, or use "Download All (.zip)" (Pro feature).</LI>
+            <LI><Strong>Step 3: Map Your Columns.</Strong> Tell the app which column contains names (required). You can also map your optional column containing image URLs.</LI>
+            <LI><Strong>Image URL Guidelines:</Strong> The URL must be a direct link to a JPG or PNG image, under 4MB, and publicly accessible. Use square images for best results.</LI>
+            <LI><Strong>Step 4: Choose an Image Style.</Strong> Click a thumbnail from the grid to select a visual theme for all your cards.</LI>
+            <LI><Strong>Step 5: Generate & Download.</Strong> Click "Confirm & Proceed". If you provided an image URL, the AI will incorporate it. Once done, download cards individually or use "Download All (.zip)" (a Pro feature).</LI>
         </UL>
 
         <H3>3. Generating a Single Image (with Imagen)</H3>

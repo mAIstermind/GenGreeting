@@ -6,9 +6,11 @@ import { DownloadIcon } from './icons/DownloadIcon.tsx';
 interface ImageGeneratorProps {
     geminiService: GeminiService | null;
     isOnline: boolean;
+    remainingCredits: number;
+    onGenerationComplete: () => void;
 }
 
-export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService, isOnline }) => {
+export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService, isOnline, remainingCredits, onGenerationComplete }) => {
     const [prompt, setPrompt] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -22,6 +24,11 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService, i
             setError("You are offline. Please reconnect to generate images.");
             return;
         }
+        
+        if (remainingCredits <= 0) {
+            setError("You have no remaining credits for this cycle. Please upgrade your plan.");
+            return;
+        }
 
         setIsLoading(true);
         setError(null);
@@ -30,6 +37,7 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService, i
         try {
             const result = await geminiService.generateImageWithImagen(prompt);
             setImageUrl(result);
+            onGenerationComplete();
         } catch (e: any) {
             setError(e.message || 'An unexpected error occurred.');
         } finally {
@@ -48,15 +56,20 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService, i
         document.body.removeChild(link);
     };
     
-    const canGenerate = geminiService && !isLoading && !!prompt.trim() && isOnline;
+    const canGenerate = geminiService && !isLoading && !!prompt.trim() && isOnline && remainingCredits > 0;
 
     return (
         <div className="w-full max-w-4xl mx-auto">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                 <form onSubmit={handleGenerate}>
-                    <label htmlFor="image-prompt" className="block text-lg font-medium text-gray-800 dark:text-gray-200">
-                        Enter your image prompt
-                    </label>
+                    <div className="flex justify-between items-center">
+                        <label htmlFor="image-prompt" className="block text-lg font-medium text-gray-800 dark:text-gray-200">
+                            Enter your image prompt
+                        </label>
+                         <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {remainingCredits} credits remaining
+                        </p>
+                    </div>
                     <div className="mt-2 flex flex-col sm:flex-row gap-3">
                         <input
                             id="image-prompt"
@@ -73,7 +86,7 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ geminiService, i
                             className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200"
                         >
                             <SparklesIcon className="h-5 w-5 mr-2 -ml-1" />
-                            {isLoading ? 'Generating...' : 'Generate'}
+                            {isLoading ? 'Generating...' : 'Generate (1 credit)'}
                         </button>
                     </div>
                 </form>

@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
+import { AgencyDashboard } from './components/AgencyDashboard.tsx';
 import './index.css';
 
 const rootElement = document.getElementById('root');
@@ -9,8 +10,21 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+
+const AppRouter: React.FC = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const view = urlParams.get('view');
+
+    if (view === 'agency') {
+        return <AgencyDashboard />;
+    }
+    
+    return <App />;
+};
+
+
 root.render(
   <React.StrictMode>
-    <App />
+    <AppRouter />
   </React.StrictMode>
 );

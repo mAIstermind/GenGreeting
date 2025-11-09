@@ -1,3 +1,4 @@
+
 # AI Greetings Agency & Implementation Guide
 
 ## 1. Introduction for Agencies & Developers
@@ -48,40 +49,29 @@ For a detailed comparison of your options and step-by-step instructions, please 
 
 ## 4. Whitelabel Customization
 
-The application is built to be easily rebranded for agency use.
+The application is built to be easily rebranded for agency use. To access the customization dashboard, add `?view=agency` to your deployed application's URL (e.g., `https://gengreeting.yourdomain.com/?view=agency`). The default password is `admin123`.
 
-### 4.1. The Branding Mechanism
+### 4.1. Branding
 
-The application's branding (its name and accent color text) is not hardcoded. It is dynamically loaded from a `<script>` tag within `index.html`. This allows you to change the branding without touching the core application logic.
+*   **App Name & Accent:** Set your application's name and the colored highlight text.
+*   **Logo:** Upload your agency's logo. This will appear in the app header for your users.
 
-```html
-<!-- Located in index.html -->
-<script id="branding-config" type="application/json">
-  {
-    "appName": "Greetings",
-    "appAccent": "AI"
-  }
-</script>
-```
+### 4.2. API & Plans
 
-### 4.2. How to Rebrand the Application
+*   **API Configuration:** Enter your own Google Gemini API key. This key will be used for all generations made by your users.
+*   **Plan Configuration:** Set the names and monthly credit limits for the different subscription tiers you will offer to your clients.
 
-1.  Open `index.html` in a text editor.
-2.  Locate the `<script id="branding-config">` tag.
-3.  Modify the `appName` and `appAccent` values to match your agency or client's brand.
-    *   `appAccent` is the colored part of the name (e.g., "AI").
-    *   `appName` is the main part of the name (e.g., "Greetings").
-    *   The result will be displayed as `<appAccent><appName>`.
+### 4.3. Legal & Compliance Configuration (Important)
 
-**Example:** For a brand called "LeadSpark":
-```json
-{
-  "appName": "Spark",
-  "appAccent": "Lead"
-}
-```
+As you are providing this application as a service to your end-users, you are responsible for providing your own legal documents. The dashboard includes fields for you to input this information.
 
-4.  Save the `index.html` file and redeploy the application. The app's header and the browser tab title will now reflect your new branding.
+*   **Go to the "Legal & Compliance" section** in the Agency Dashboard.
+*   **Privacy Policy:** Paste the full text of your company's privacy policy into the provided text area.
+*   **Terms & Conditions:** Paste the full text of your company's terms and conditions.
+
+The content you save here will be displayed to your end-users when they click the corresponding links in the application's footer.
+
+**Disclaimer:** You are solely responsible for ensuring that your legal documents are compliant with the laws and regulations in your jurisdiction. We strongly recommend consulting with a legal professional.
 
 ## 5. GoHighLevel (GHL) Funnel Integration
 

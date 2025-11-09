@@ -8,4 +8,6 @@ export interface BrandingConfig {
     appName: string;
     appAccent: string;
     fullAppName?: string;
+    // FIX: Added optional 'logo' property to support agency branding and resolve type error in App.tsx.
+    logo?: string | null;
 }

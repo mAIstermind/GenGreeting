@@ -1,11 +1,28 @@
 
+import type { AgencyConfig } from "../types.ts";
+
 const callApi = async (action: string, payload: object) => {
+    
+    // Check for an agency-specific API key and add it to the payload if it exists.
+    let fullPayload: object = { action, ...payload };
+    try {
+        const agencyConfigStr = localStorage.getItem('aigreetings_agency_config');
+        if (agencyConfigStr) {
+            const agencyConfig: AgencyConfig = JSON.parse(agencyConfigStr);
+            if (agencyConfig.apiKey) {
+                fullPayload = { ...fullPayload, apiKey: agencyConfig.apiKey };
+            }
+        }
+    } catch (e) {
+        console.warn("Could not parse agency config from localStorage", e);
+    }
+    
     const response = await fetch('/api/gemini', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ action, ...payload }),
+        body: JSON.stringify(fullPayload),
     });
 
     if (!response.ok) {
@@ -24,6 +41,10 @@ const generatePromptConcept = async (theme: string, contactName: string): Promis
 
 const generateGreetingCardImage = async (prompt: string): Promise<string> => {
     return callApi('generateGreetingCardImage', { prompt });
+};
+
+const generatePersonalizedCard = async (prompt: string, profileImageUrl: string): Promise<string> => {
+    return callApi('generatePersonalizedCard', { prompt, profileImageUrl });
 };
 
 const editGreetingCardImage = async (base64ImageData: string, prompt: string): Promise<string> => {
@@ -51,6 +72,7 @@ export const geminiService = {
     checkApiHealth,
     generatePromptConcept,
     generateGreetingCardImage,
+    generatePersonalizedCard,
     editGreetingCardImage,
     brandCardImage,
     generateImageWithImagen,

@@ -1,3 +1,4 @@
+
 # AI Greetings - User Guide
 
 ## 1. Introduction
@@ -21,27 +22,32 @@ The application has two main tabs for generating images. Let's explore both.
 This is the perfect tool for creating personalized cards for your entire contact list at once.
 
 **Step 1: Prepare Your CSV File**
-Create a CSV file with at least two columns: one for names and one for emails. You can also include other columns for more detailed personalization, like "Job Title", "Hobby", or "City".
+Create a CSV file with at least one column: `name`. You can also include a second, optional column containing a public URL to a profile picture or logo for each contact.
+
+*   **Required Column:** A column with the header `name` (or similar, you will map this in the app).
+*   **Optional Column:** A column with a header like `imageUrl` containing a full, publicly accessible URL to a JPG or PNG image.
 
 **Step 2: Upload Your File**
 On the "Batch Generate via CSV" tab, click the upload area or drag-and-drop your prepared CSV file into it.
 
 **Step 3: Map Your Columns**
-The app will ask you to confirm which column contains the names and which contains the emails.
-*   Under **Contact Name**, select the column from your file that holds the names.
-*   Under **Contact Email**, select the column for email addresses.
+The app will ask you to confirm which column from your file to use.
+*   Under **Contact Name**, select the column from your file that holds the names. This is required.
+*   Under **Profile/Logo Image URL**, you can optionally select the column that contains direct links to images.
 
-**Step 4 (Optional): Add Theme Customization**
-Below the Name and Email mapping, you'll see a field for **"Theme Customization"**. This is a powerful feature that allows you to select another column from your CSV to add extra detail to each card.
-*   **Example:** If your CSV has a column named "Hobby", and for John Doe the value is "hiking", the AI will add "hiking" to the prompt for John's card, creating a more personalized image. Simply select your "Hobby" column from the dropdown.
+**Image URL Guidelines (Important):**
+*   The URL must link directly to the image file (ending in `.jpg`, `.jpeg`, or `.png`).
+*   The image must be publicly accessible (not behind a login).
+*   For best results, use square images.
+*   The image file size should be under 4MB.
 
-**Step 5: Choose a Style with Visual Previews**
-Instead of just a list of names, you'll see a grid of thumbnails, each representing a different visual theme.
+**Step 4: Choose a Style with Visual Previews**
+You'll see a grid of thumbnails, each representing a different visual theme.
 *   Click on a thumbnail to select the style you want.
 *   You can see a text preview of the prompt below the grid to understand how the AI will interpret the style.
 
-**Step 6: Generate & Download**
-Click **"Confirm & Proceed"**. The application will begin generating a unique card for each person in your list. Once finished, you can:
+**Step 5: Generate & Download**
+Click **"Confirm & Proceed"**. The application will begin generating a unique card for each person. If you provided an image URL for a contact, the AI will intelligently incorporate that image into the final design. Once finished, you can:
 *   Download cards one by one using the "Download" button on each card.
 *   **(Pro Feature)** Click **"Download All (.zip)"** to save all cards, with your branding applied, in a single file.
 
@@ -73,13 +79,23 @@ After generating a card, you can fine-tune it.
 *   **Upgrading:** You can click the "Upgrade" button in the header at any time to go to the pricing page and choose a different plan.
 *   **Custom Branding:** Click the **user icon** in the top-right corner to open Settings. Here you can enter your name/business name and upload a logo. Your branding will be automatically applied to the corner of every card when you use the **"Download All (.zip)"** function.
 
-## 4. Frequently Asked Questions (FAQ)
+## 4. Installing as a Desktop/Mobile App (PWA)
+
+This application is a Progressive Web App (PWA), which means you can install it directly onto your computer or phone for a faster, more integrated experience, just like a native app.
+
+*   **On Desktop (Chrome, Edge):** Look for an "Install" icon in the address bar (usually on the right side, resembling a computer screen with a down arrow). Click it and then confirm the installation. The app will now be in your applications folder and on your taskbar/dock.
+*   **On Mobile (iOS/Safari):** Tap the "Share" button at the bottom of the screen, then scroll down and tap "Add to Home Screen".
+*   **On Mobile (Android/Chrome):** Tap the three-dot menu in the top-right corner, then tap "Install app" or "Add to Home screen".
+
+This gives you quick, one-click access from your home screen or desktop and provides a focused, full-screen experience without browser tabs.
+
+## 5. Frequently Asked Questions (FAQ)
 
 **Q: What happens if I run out of credits?**
 A: The generation features will be disabled. You will see a message prompting you to upgrade your plan to continue creating cards.
 
 **Q: What happens if an image fails to generate for one of my contacts?**
-A: The app will stop the batch process and display an error message explaining the issue. This prevents you from wasting credits on a faulty list or temporary API issue. You can then fix the issue and try again.
+A: The app will continue generating cards for other contacts but will display an error message for the failed ones. This prevents a single bad entry (like a broken image URL) from stopping the entire batch.
 
 **Q: Can I use my own custom prompts for batch generation?**
-A: Currently, batch generation uses the provided templates for consistency and quality, but you can add custom details using the "Theme Customization" feature. For fully custom one-off prompts, please use the "Generate with Imagen" tab.
+A: Currently, batch generation uses the provided templates for consistency and quality. For fully custom one-off prompts, please use the "Generate with Imagen" tab.

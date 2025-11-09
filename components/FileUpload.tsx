@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { UploadIcon } from './icons/UploadIcon';
+import { UploadIcon } from './icons/UploadIcon.tsx';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
@@ -19,7 +19,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled }
     }
   };
 
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+  // FIX: Changed event type from React.DragEvent<HTMLDivElement> to React.DragEvent<HTMLLabelElement> to match the element it's attached to.
+  const handleDrop = useCallback((e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -34,12 +35,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled }
     }
   }, [onFileSelect, disabled]);
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  // FIX: Changed event type from React.DragEvent<HTMLDivElement> to React.DragEvent<HTMLLabelElement> to match the element it's attached to.
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     e.stopPropagation();
   };
 
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+  // FIX: Changed event type from React.DragEvent<HTMLDivElement> to React.DragEvent<HTMLLabelElement> to match the element it's attached to.
+  const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (!disabled) {
@@ -47,7 +50,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled }
     }
   };
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+  // FIX: Changed event type from React.DragEvent<HTMLDivElement> to React.DragEvent<HTMLLabelElement> to match the element it's attached to.
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -74,7 +78,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled }
           {fileName ? fileName : 'Drag & drop a CSV file, or click to upload'}
         </span>
         <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
-          CSV must contain 'name' and 'email' columns
+          CSV must contain a 'name' column. Optionally, add an 'email' or 'imageUrl' column.
         </span>
         <input
           id="file-upload"

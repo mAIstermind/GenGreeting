@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <!-- WHITELABEL: Title can be dynamic, e.g., Thank You - {{ agency.name }} -->
-    <title>Thank You - AI Greetings</title>
+     <!-- WHITELABEL: Title can be dynamic, e.g., A Gift For You - {{ agency.name }} -->
+    <title>A Gift For You - AI Greetings</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -28,16 +28,23 @@
     <main class="gradient-bg flex-grow flex items-center justify-center py-20 px-6">
         <div class="container mx-auto text-center max-w-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-12">
              <div class="w-24 h-24 mx-auto mb-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center border-2 border-green-500">
-                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1014.625 7.5H12v-2.625z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h2.625A2.625 2.625 0 1112 4.875v2.625z" />
+                </svg>
             </div>
-            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">You're All Set!</h2>
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">A Gift from Us to You.</h2>
             <p class="text-lg text-gray-300 mb-8">
-                Thank you for signing up. You're ready to start creating amazing, personalized greeting cards. Check your email for a confirmation.
+                As a special thank you, we're giving you a lifetime bonus. Click the button below to create your account and automatically claim <strong class="text-white">50 free credits, every single month, forever.</strong> No strings attached.
             </p>
-            <!-- NOTE FOR GHL USER: Replace '#' with the actual URL of your hosted React application -->
-            <!-- WHITELABEL: This link could also be dynamic, e.g., https://{{ agency.customDomain }} -->
-            <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 inline-block">
-                Go to the App
+            <!-- 
+                NOTE FOR IMPLEMENTER: 
+                1. Replace '#' with the actual URL of your deployed React application.
+                2. The '?magnanimous=FOREVER50' part is crucial. 
+                   It tells the app to automatically apply the bonus.
+            -->
+            <a href="#?magnanimous=FOREVER50" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 inline-block">
+                Claim My 50 Free Monthly Credits
             </a>
         </div>
     </main>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CloseIcon } from './icons/CloseIcon.tsx';
 import { LoginIcon } from './icons/LoginIcon.tsx';
@@ -18,10 +19,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSwitchToRegis
         e.preventDefault();
         setError('');
         setIsLoading(true);
-        // Inform user that login is not available in demo
+        // Simulate a successful API call for demo purposes
+        // In a real app, you would verify credentials with a backend
+        // and then call onLoginSuccess if they are valid.
         setTimeout(() => {
-            setError('Login functionality is not available in this demo. Please use the free trial.');
             setIsLoading(false);
+            onLoginSuccess();
         }, 500);
     };
 

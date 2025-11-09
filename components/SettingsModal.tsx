@@ -116,6 +116,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ initialName, initi
                             </div>
                         </div>
                     </div>
+                     <div className="bg-gray-100 dark:bg-gray-900/50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                           <strong className="font-semibold text-gray-800 dark:text-white">Note:</strong> Applying branding requires an additional AI process for each card, which will consume <strong className="font-semibold text-gray-800 dark:text-white">one credit per card</strong> from your plan.
+                        </p>
+                    </div>
                 </div>
 
                 <div className="p-6 flex justify-end gap-4 border-t border-gray-200 dark:border-gray-700">

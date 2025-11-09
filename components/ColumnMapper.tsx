@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { CheckIcon } from './icons/CheckIcon.tsx';
 import { promptTemplates, defaultPromptTemplate } from '../promptTemplates.ts';
 
 interface ColumnMapperProps {
   headers: string[];
-  onMap: (mapping: { name: string; email: string; prompt: string }, templateId: string) => void;
+  onMap: (mapping: { name: string; email: string; profileImage: string }, templateId: string) => void;
   onCancel: () => void;
   fileName: string;
 }
@@ -12,37 +13,37 @@ interface ColumnMapperProps {
 export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCancel, fileName }) => {
   const [nameColumn, setNameColumn] = useState('');
   const [emailColumn, setEmailColumn] = useState('');
-  const [promptColumn, setPromptColumn] = useState('');
+  const [profileImageColumn, setProfileImageColumn] = useState('');
   const [templateId, setTemplateId] = useState(defaultPromptTemplate.id);
 
   useEffect(() => {
     // Auto-detect columns based on common names
     const nameGuess = headers.find(h => h.toLowerCase().includes('name'));
-    const emailGuess = headers.find(h => ['email', 'e-mail'].includes(h.toLowerCase()));
-    const promptGuess = headers.find(h => h.toLowerCase().includes('prompt') || h.toLowerCase().includes('custom'));
+    const emailGuess = headers.find(h => h.toLowerCase().includes('email'));
+    const imageGuess = headers.find(h => h.toLowerCase().includes('image') || h.toLowerCase().includes('logo') || h.toLowerCase().includes('url') || h.toLowerCase().includes('photo'));
 
     if (nameGuess) setNameColumn(nameGuess);
     if (emailGuess) setEmailColumn(emailGuess);
-    if (promptGuess) setPromptColumn(promptGuess);
+    if (imageGuess) setProfileImageColumn(imageGuess);
   }, [headers]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setNameColumn(value);
+    if (value && value === profileImageColumn) setProfileImageColumn('');
     if (value && value === emailColumn) setEmailColumn('');
-    if (value && value === promptColumn) setPromptColumn('');
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setEmailColumn(value);
     if (value && value === nameColumn) setNameColumn('');
-    if (value && value === promptColumn) setPromptColumn('');
+    if (value && value === profileImageColumn) setProfileImageColumn('');
   };
-  
-  const handlePromptChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    setPromptColumn(value);
+    setProfileImageColumn(value);
     if (value && value === nameColumn) setNameColumn('');
     if (value && value === emailColumn) setEmailColumn('');
   };
@@ -50,71 +51,72 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isMappingValid) {
-      onMap({ name: nameColumn, email: emailColumn, prompt: promptColumn }, templateId);
+      onMap({ name: nameColumn, email: emailColumn, profileImage: profileImageColumn }, templateId);
     }
   };
 
-  const isMappingValid = nameColumn && emailColumn && templateId;
+  const isMappingValid = nameColumn && templateId;
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
       <form onSubmit={handleSubmit} className="space-y-8">
         <div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Map CSV Columns</h2>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Map Your CSV Column(s)</h2>
             <p className="text-gray-600 dark:text-gray-400">
-                Map columns from <span className="font-semibold text-blue-500">{fileName}</span> to the required fields.
+                Match the columns from <span className="font-semibold text-blue-500">{fileName}</span> to the fields below. Only 'Name' is required.
             </p>
         </div>
       
         <fieldset className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <label htmlFor="name-column" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
-                Contact Name
-                <span className="block text-sm text-gray-500 dark:text-gray-400">e.g., 'Full Name', 'First Name'</span>
-            </label>
-            <select
-                id="name-column"
-                value={nameColumn}
-                onChange={handleNameChange}
-                className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-            >
-                <option value="">Select a column...</option>
-                {headers.map(header => (
-                <option key={header} value={header}>{header}</option>
-                ))}
-            </select>
+                <label htmlFor="name-column" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
+                    Contact Name <span className="text-red-500">*</span>
+                    <span className="block text-sm text-gray-500 dark:text-gray-400">e.g., 'Full Name', 'First Name'</span>
+                </label>
+                <select
+                    id="name-column"
+                    value={nameColumn}
+                    onChange={handleNameChange}
+                    required
+                    className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                    <option value="">Select a column...</option>
+                    {headers.map(header => (
+                    <option key={header} value={header}>{header}</option>
+                    ))}
+                </select>
             </div>
             
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <label htmlFor="email-column" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
-                Contact Email
-                <span className="block text-sm text-gray-500 dark:text-gray-400">e.g., 'Email Address'</span>
-            </label>
-            <select
-                id="email-column"
-                value={emailColumn}
-                onChange={handleEmailChange}
-                className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-            >
-                <option value="">Select a column...</option>
-                {headers.map(header => (
-                <option key={header} value={header}>{header}</option>
-                ))}
-            </select>
+                <label htmlFor="email-column" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
+                    Email Address <span className="text-base font-normal">(Optional)</span>
+                    <span className="block text-sm text-gray-500 dark:text-gray-400">Used for templates like 'Email Signature'</span>
+                </label>
+                <select
+                    id="email-column"
+                    value={emailColumn}
+                    onChange={handleEmailChange}
+                    className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                    <option value="">Do not map</option>
+                    {headers.map(header => (
+                    <option key={header} value={header}>{header}</option>
+                    ))}
+                </select>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <label htmlFor="prompt-column" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
-                    Theme Customization <span className="text-base font-normal">(Optional)</span>
-                    <span className="block text-sm text-gray-500 dark:text-gray-400">Add per-row text to the main theme</span>
+                <label htmlFor="profile-image-column" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
+                    Profile/Logo Image URL <span className="text-base font-normal">(Optional)</span>
+                    <span className="block text-sm text-gray-500 dark:text-gray-400">Public URL to a JPG/PNG image.</span>
                 </label>
                 <select
-                    id="prompt-column"
-                    value={promptColumn}
-                    onChange={handlePromptChange}
+                    id="profile-image-column"
+                    value={profileImageColumn}
+                    onChange={handleProfileImageChange}
                     className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                 >
-                    <option value="">Do not customize</option>
+                    <option value="">Do not map</option>
                     {headers.map(header => (
                     <option key={header} value={header}>{header}</option>
                     ))}
@@ -129,29 +131,35 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Choose a creative style for the AI to use. This style will be applied to every person in your list.
             </p>
-             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
                 {promptTemplates.map(template => (
                     <div key={template.id} onClick={() => setTemplateId(template.id)}
+                        title={template.description}
                         className={`
-                            group cursor-pointer rounded-lg border-2 p-2 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-gray-800 focus-within:ring-blue-500 flex flex-col
-                            ${templateId === template.id ? 'border-blue-500 bg-blue-500/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400'}
-                            transition-all duration-200
+                            group cursor-pointer rounded-lg border-2 p-1
+                            ${templateId === template.id ? 'border-blue-500' : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400'}
+                            transition-all duration-200 flex flex-col bg-white dark:bg-gray-800
                         `}
                     >
-                        <div className="aspect-square w-full bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden mb-2">
+                        <div className="relative aspect-square w-full bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden mb-2">
                              <img src={template.thumbnail} alt={template.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"/>
+                             {templateId === template.id && (
+                                <div className="absolute inset-0 bg-blue-600/50 flex items-center justify-center backdrop-blur-sm">
+                                    <CheckIcon className="w-12 h-12 text-white opacity-90"/>
+                                </div>
+                             )}
                         </div>
-                        <div className="text-center mt-auto">
-                            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate" title={template.name}>
+                        <div className="p-2 text-center flex-grow flex flex-col justify-between">
+                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200" title={template.name}>
                                 {template.name}
                             </h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 px-1" title={template.description}>{template.description}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 h-12 line-clamp-3">{template.description}</p>
                         </div>
                     </div>
                 ))}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 italic text-center">
-                Prompt Preview: "{promptTemplates.find(t => t.id === templateId)?.template.replace(/\${firstName}/g, '[Recipient Name]') || ''}"
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 italic text-center">
+                Prompt Preview: "{promptTemplates.find(t => t.id === templateId)?.template.replace(/\${firstName}/g, '[Recipient Name]').replace(/\${email}/g, '[recipient@email.com]') || ''}"
             </p>
         </fieldset>
 

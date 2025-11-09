@@ -1,8 +1,10 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF--8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <!-- WHITELABEL: Title can be dynamic, e.g., Pricing - {{ agency.name }} -->
     <title>Pricing - AI Greetings</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -10,6 +12,13 @@
         body { font-family: 'Inter', sans-serif; }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
         .gradient-bg { background-color: #0B1120; background-image: radial-gradient(at 10% 20%, hsla(217, 78%, 20%, 1) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(269, 78%, 25%, 1) 0px, transparent 50%), radial-gradient(at 80% 90%, hsla(300, 78%, 25%, 1) 0px, transparent 50%); }
+        /* Toggle switch styles */
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #3b82f6; /* bg-blue-600 */
+        }
+        .toggle-checkbox:checked + .toggle-label::after {
+            transform: translateX(100%);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -32,16 +41,28 @@
     <main class="gradient-bg py-20 px-6">
         <div class="container mx-auto text-center">
             <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Choose Your Plan</h2>
-            <p class="max-w-2xl mx-auto text-lg text-gray-300 mb-12">
+            <p class="max-w-2xl mx-auto text-lg text-gray-300 mb-8">
                 Upgrade to unlock more generations, add your personal brand, and download all your cards with one click.
             </p>
+
+            <!-- Billing Toggle -->
+            <div class="flex items-center justify-center space-x-4 mb-12">
+                <span class="font-medium text-lg" id="billing-monthly-label">Monthly</span>
+                <input type="checkbox" id="billing-toggle" class="toggle-checkbox hidden">
+                <label for="billing-toggle" class="toggle-label relative w-12 h-6 bg-gray-600 rounded-full cursor-pointer transition-colors duration-300 ease-in-out after:content-[''] after:absolute after:w-5 after:h-5 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 after:transition-transform after:duration-300 after:ease-in-out"></label>
+                <span class="font-medium text-lg text-gray-400" id="billing-quarterly-label">
+                    Quarterly <span class="text-sm text-green-400">(Save 15%)</span>
+                </span>
+            </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-start">
 
                 <!-- Pro Plan -->
                 <div class="w-full bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700 rounded-2xl p-8 h-full flex flex-col">
                     <h3 class="text-2xl font-bold text-white">Pro</h3>
-                    <p class="text-5xl font-extrabold my-4">$29<span class="text-lg font-medium text-gray-300">/mo</span></p>
+                    <p class="text-5xl font-extrabold my-4">
+                        $<span id="price-pro">29</span><span class="text-lg font-medium text-gray-300" id="billing-cycle-pro">/mo</span>
+                    </p>
                     <p class="text-gray-400 mb-6">For individual power users</p>
                     <ul class="text-left space-y-3 mb-8 flex-grow">
                         <li class="flex items-center">
@@ -69,7 +90,9 @@
                         <span class="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Most Popular</span>
                     </div>
                     <h3 class="text-2xl font-bold text-white">Business</h3>
-                    <p class="text-5xl font-extrabold my-4">$79<span class="text-lg font-medium text-gray-300">/mo</span></p>
+                    <p class="text-5xl font-extrabold my-4">
+                        $<span id="price-business">79</span><span class="text-lg font-medium text-gray-300" id="billing-cycle-business">/mo</span>
+                    </p>
                     <p class="text-blue-300 mb-6">For small businesses & teams</p>
                     <ul class="text-left space-y-3 mb-8 flex-grow">
                         <li class="flex items-center">
@@ -94,7 +117,9 @@
                 <!-- Agency Plan -->
                 <div class="w-full bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700 rounded-2xl p-8 h-full flex flex-col">
                     <h3 class="text-2xl font-bold text-white">Agency</h3>
-                    <p class="text-5xl font-extrabold my-4">$199<span class="text-lg font-medium text-gray-300">/mo</span></p>
+                    <p class="text-5xl font-extrabold my-4">
+                        $<span id="price-agency">199</span><span class="text-lg font-medium text-gray-300" id="billing-cycle-agency">/mo</span>
+                    </p>
                     <p class="text-gray-400 mb-6">For agencies & heavy usage</p>
                     <ul class="text-left space-y-3 mb-8 flex-grow">
                         <li class="flex items-center">
@@ -122,9 +147,60 @@
     
     <!-- Footer -->
     <footer class="bg-gray-900 text-center py-6">
-        <!-- WHITELABEL: Copyright can be dynamic, e.g., &copy; 2024 {{ agency.name }}. All Rights Reserved. -->
-        <p class="text-gray-500">&copy; 2024 AI Greetings. All Rights Reserved.</p>
+        <!-- WHITELABEL: Copyright can be dynamic, e.g., &copy; 2025 {{ agency.name }}. All Rights Reserved. -->
+        <p class="text-gray-500">&copy; 2025 AI Greetings. All Rights Reserved.</p>
     </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggle = document.getElementById('billing-toggle');
+            const monthlyLabel = document.getElementById('billing-monthly-label');
+            const quarterlyLabel = document.getElementById('billing-quarterly-label');
+
+            const prices = {
+                pro: { monthly: 29, quarterly: 74 },
+                business: { monthly: 79, quarterly: 201 },
+                agency: { monthly: 199, quarterly: 507 }
+            };
+
+            const priceElements = {
+                pro: document.getElementById('price-pro'),
+                business: document.getElementById('price-business'),
+                agency: document.getElementById('price-agency')
+            };
+
+            const cycleElements = {
+                pro: document.getElementById('billing-cycle-pro'),
+                business: document.getElementById('billing-cycle-business'),
+                agency: document.getElementById('billing-cycle-agency')
+            };
+            
+            function updatePrices(isQuarterly) {
+                if (isQuarterly) {
+                    monthlyLabel.classList.add('text-gray-400');
+                    monthlyLabel.classList.remove('text-white');
+                    quarterlyLabel.classList.remove('text-gray-400');
+                    quarterlyLabel.classList.add('text-white');
+                } else {
+                    monthlyLabel.classList.remove('text-gray-400');
+                    monthlyLabel.classList.add('text-white');
+                    quarterlyLabel.classList.add('text-gray-400');
+                    quarterlyLabel.classList.remove('text-white');
+                }
+
+                for (const plan in prices) {
+                    priceElements[plan].textContent = isQuarterly ? prices[plan].quarterly : prices[plan].monthly;
+                    cycleElements[plan].textContent = isQuarterly ? '/quarter' : '/mo';
+                }
+            }
+            
+            toggle.addEventListener('change', function() {
+                updatePrices(this.checked);
+            });
+            
+            // Initial state
+            updatePrices(toggle.checked);
+        });
+    </script>
 </body>
 </html>
