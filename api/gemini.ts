@@ -79,7 +79,7 @@ export default async function handler(req: any, res: any) {
                     contents: userPrompt,
                     config: { systemInstruction },
                 });
-                result = response.text.trim();
+                result = (response.text ?? '').trim();
                 break;
             }
 
