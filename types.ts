@@ -1,3 +1,4 @@
+import type { User } from "./auth.ts";
 
 export interface Contact {
   name: string;
@@ -28,3 +29,6 @@ export interface AgencyConfig {
   privacyPolicy?: string;
   termsAndConditions?: string;
 }
+
+// Re-export User from the new auth file to maintain a single point of type imports
+export type { User };

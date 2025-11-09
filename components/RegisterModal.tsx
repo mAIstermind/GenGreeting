@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CloseIcon } from './icons/CloseIcon.tsx';
+import type { User } from '../types.ts';
 
 interface RegisterModalProps {
     onClose: () => void;
@@ -9,6 +10,8 @@ interface RegisterModalProps {
     couponCodeFromUrl?: string | null;
     foreverCodeFromUrl?: string | null;
 }
+
+const USERS_STORAGE_KEY = 'aigreetings_users';
 
 export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, onRegisterSuccess, couponCodeFromUrl, foreverCodeFromUrl }) => {
     const [email, setEmail] = useState('');
@@ -31,17 +34,41 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSwitchT
     const handleRegister = (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
+
         if (password !== confirmPassword) {
             setError("Passwords do not match.");
+            setIsLoading(false);
             return;
         }
-        setIsLoading(true);
-        // Simulate API call for registration
-        // In a real app, you would create the user account on your backend
-        // and then call onRegisterSuccess.
+        
+        // Simulate an async API call
         setTimeout(() => {
-            setIsLoading(false);
-            onRegisterSuccess(couponCode, foreverCode);
+            try {
+                const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+                const users: User[] = storedUsers ? JSON.parse(storedUsers) : [];
+
+                const emailExists = users.some(user => user.email.toLowerCase() === email.toLowerCase());
+
+                if (emailExists) {
+                    setError("An account with this email already exists.");
+                    setIsLoading(false);
+                    return;
+                }
+                
+                // In a real app, you would hash the password here before saving
+                const newUser: User = { email: email.toLowerCase(), password };
+                users.push(newUser);
+
+                localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+                
+                setIsLoading(false);
+                onRegisterSuccess(couponCode, foreverCode);
+
+            } catch (err) {
+                setError("An unexpected error occurred during registration.");
+                setIsLoading(false);
+            }
         }, 750);
     };
 

@@ -193,9 +193,10 @@ function App() {
       const isBetaTester = couponCode === BETA_TESTER_COUPON_CODE;
       const hasForeverBonus = foreverCode === FOREVER_50_CODE;
 
+      // All new registrations start on a free trial plan
       const newSub: Subscription = {
-          planName: 'pro',
-          monthlyLimit: plans.pro.limit,
+          planName: 'Trial',
+          monthlyLimit: TRIAL_LIMIT, // 10 generations for free trial
           ...(isBetaTester && { bonusCredits: 1000 }),
           ...(hasForeverBonus && { foreverBonus: 50 }),
           cycleStartDate: Date.now(),
@@ -217,7 +218,12 @@ function App() {
         setSubscription(currentSub);
       } catch (e) {
         console.error("Failed to parse subscription data on login", e);
+        // If parsing fails, maybe create a new trial subscription
+         handleRegisterSuccess();
       }
+    } else {
+       // If no subscription exists for a logged-in user, create a new trial one.
+       handleRegisterSuccess();
     }
   };
 
@@ -225,7 +231,9 @@ function App() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setSubscription(null);
-    localStorage.removeItem(SUBSCRIPTION_STORAGE_KEY);
+    // Note: We don't remove the subscription from localStorage on logout,
+    // so their usage data is preserved if they log back in.
+    // If you wanted to clear it: localStorage.removeItem(SUBSCRIPTION_STORAGE_KEY);
   }
 
   useEffect(() => {
@@ -709,26 +717,23 @@ function App() {
   };
 
   const renderLoggedOutContent = () => {
-     const remainingGenerations = TRIAL_LIMIT - trialGenerationsUsed;
+     const remainingGenerations = 1 - trialGenerationsUsed;
 
     if (remainingGenerations <= 0) {
         return (
             <div className="text-center bg-gray-800 p-8 rounded-lg max-w-2xl mx-auto">
             <h2 className="text-2xl font-bold text-white mb-4">
-                You have used all your free trial generations.
+                You've used your one free generation.
             </h2>
             <p className="text-gray-300 mb-6">
-                To continue generating beautiful, personalized cards and unlock batch CSV uploads, please register or upgrade your plan.
+                To continue generating, please register for a free account to get 10 more generations and unlock batch CSV uploads.
             </p>
-            <a
-                href="/ghl-pricing-page.html"
-                target="_blank"
-                rel="noopener noreferrer"
+             <button
+                onClick={() => setAuthModal('register')}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
             >
-                <UpgradeIcon className="w-5 h-5"/>
-                View Plans
-            </a>
+                Register for Free
+            </button>
             </div>
         );
     }
