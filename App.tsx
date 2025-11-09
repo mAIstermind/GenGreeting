@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import JSZip from 'jszip';
@@ -352,7 +351,7 @@ function App() {
     });
   };
 
-  const handleMap = (mapping: { name: string; email: string; profileImage: string }, promptTemplate: string) => {
+  const handleMap = (mapping: { name: string; profileImage: string }, promptTemplate: string) => {
     if (!csvFile) return;
 
     setError(null);
@@ -367,7 +366,6 @@ function App() {
       complete: async (results: any) => {
         let parsedContacts: Contact[] = results.data.map((row: any) => ({
           name: row[mapping.name] || '',
-          email: mapping.email ? row[mapping.email] || '' : '',
           profileImageUrl: mapping.profileImage ? row[mapping.profileImage] || '' : '',
         })).filter((c: Contact) => c.name);
         
@@ -378,7 +376,7 @@ function App() {
                 setError(
                     <span>
                         Your current plan has {remaining} generations left this cycle, but your spreadsheet has {parsedContacts.length} contacts.
-                        <a href="/ghl-pricing-page.html" target="_blank" rel="noopener noreferrer" className="font-bold text-blue-400 hover:underline ml-2">
+                        <a href="https://maistermind.com/ghl-pricing-page.html" target="_blank" rel="noopener noreferrer" className="font-bold text-blue-400 hover:underline ml-2">
                             Please upgrade your plan
                         </a>
                         &nbsp;or upload a smaller file.
@@ -401,19 +399,6 @@ function App() {
           return;
         }
 
-        const templateRequiresEmail = promptTemplate.includes('${email}');
-        if (templateRequiresEmail && !mapping.email) {
-            setError(
-                <span>
-                    The selected image style requires an 'email' column, but none was mapped. 
-                    Please go back and map the email column or choose a different style.
-                </span>
-            );
-            setAppState('mapping'); // Go back to mapping step to fix it.
-            return;
-        }
-
-
         const newCards: GeneratedCard[] = [];
         const generationErrors: string[] = [];
 
@@ -421,20 +406,7 @@ function App() {
           const contact = parsedContacts[i];
           try {
             const firstName = contact.name.split(' ')[0];
-            const firstInitial = firstName.charAt(0).toUpperCase();
-            let imagePrompt = promptTemplate
-                .replace(/\${firstName}/g, firstName)
-                .replace(/\${firstInitial}/g, firstInitial);
-
-            if (templateRequiresEmail) {
-                if (contact.email) {
-                    imagePrompt = imagePrompt.replace(/\${email}/g, contact.email);
-                } else {
-                    generationErrors.push(`- ${contact.name}: Skipped (template requires an email, but none was found in this row).`);
-                    setProgress(((i + 1) / parsedContacts.length) * 100);
-                    continue;
-                }
-            }
+            const imagePrompt = promptTemplate.replace(/\${firstName}/g, firstName);
             
             let imageUrl;
             if (contact.profileImageUrl) {
@@ -519,15 +491,15 @@ function App() {
 
   const handleUpdateCard = (updatedCard: GeneratedCard) => {
     setGeneratedCards(currentCards => 
-      currentCards.map(c => (c.name === updatedCard.name && c.email === updatedCard.email && c.imageUrl === editingCard?.imageUrl) ? updatedCard : c)
+      currentCards.map(c => (c.name === updatedCard.name && c.imageUrl === editingCard?.imageUrl) ? updatedCard : c)
     );
     setEditingCard(null);
   };
 
-  const handleDownloadAll = useCallback(async () => {
+  const handleDownloadAll = useCallback(async (applyBranding: boolean) => {
     if (generatedCards.length === 0) return;
 
-    const useBranding = (brandName || brandLogo) && isLoggedIn;
+    const useBranding = applyBranding;
     setIsBranding(useBranding);
     setProgress(0);
 
@@ -677,7 +649,7 @@ function App() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-                <a href="/ghl-pricing-page.html" target="_blank" rel="noopener noreferrer" className="hidden sm:inline-flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
+                <a href="https://maistermind.com/ghl-pricing-page.html" target="_blank" rel="noopener noreferrer" className="hidden sm:inline-flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
                     <UpgradeIcon className="w-5 h-5" />
                     Upgrade Plan
                 </a>

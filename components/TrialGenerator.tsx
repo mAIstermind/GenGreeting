@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback } from 'react';
 import type { Contact, GeneratedCard } from '../types.ts';
 import type { GeminiService } from '../services/geminiService.ts';
@@ -47,7 +48,7 @@ export const TrialGenerator: React.FC<TrialGeneratorProps> = ({
         throw new Error("Selected template not found.");
       }
       
-      const contact: Contact = { name: nameToGen, email: 'trial@example.com' };
+      const contact: Contact = { name: nameToGen };
       const firstName = nameToGen.split(' ')[0];
       const imagePrompt = selectedTemplate.template.replace(/\${firstName}/g, firstName);
 

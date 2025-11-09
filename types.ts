@@ -2,7 +2,6 @@ import type { User } from "./auth.ts";
 
 export interface Contact {
   name: string;
-  email?: string;
   profileImageUrl?: string;
 }
 

@@ -47,7 +47,7 @@ const UserGuide = () => (
         <H3>4. Editing & Branding</H3>
          <UL>
             <LI><Strong>Editing:</Strong> Hover over any card image and click the "Edit" button. Type your instruction (e.g., <Code>"Make the background blue"</Code>) and click "Apply Edit".</LI>
-            <LI><Strong>Branding (Pro Feature):</Strong> Click the user icon in the header to open Settings. You can add your name and upload a logo. Your branding will be automatically applied when you use "Download All (.zip)".</LI>
+            <LI><Strong>Branding (Pro Feature):</Strong> Click the user icon in the header to open Settings. You can add your name and upload a logo. Your branding can be optionally applied when you use "Download All (.zip)".</LI>
         </UL>
         
         <H3>5. Installing as a Desktop/Mobile App (PWA)</H3>
@@ -61,85 +61,20 @@ const UserGuide = () => (
     </GuideContent>
 );
 
-const AgencyGuide = () => (
-     <GuideContent>
-        <H2>Agency & Implementation Guide</H2>
-        <H3>1. Deployment</H3>
-        <P>Follow these steps to deploy your own instance of the application.</P>
-        <UL>
-            <LI><Strong>Prerequisites:</Strong> A static website host (Vercel, Netlify) and a Google Gemini API Key.</LI>
-            <LI><Strong>API Key Config:</Strong> The Gemini API key must be set as an environment variable named <Code>GEMINI_API_KEY</Code> in your hosting provider's settings. Do not hardcode the key.</LI>
-            <LI><Strong>Deployment:</Strong> Upload all application files to your host. Since it's a static app, no build step is needed. Just serve the <Code>index.html</Code> file.</LI>
-        </UL>
-
-        <H3>2. Connecting a Custom Domain (Recommended)</H3>
-        <P>Once deployed, serve the app from your own domain. The <Strong>subdomain approach</Strong> (e.g., <Code>app.yourdomain.com</Code>) is highly recommended for its simplicity and reliability.</P>
-        <P>For detailed instructions, please refer to the <Code>DEPLOYMENT_OPTIONS.md</Code> file included in the project source code.</P>
-
-        <H3>3. Whitelabel Customization</H3>
-        <P>Easily rebrand the application for your agency.</P>
-         <UL>
-            <LI><Strong>How it Works:</Strong> The app's name is loaded from a <Code>&lt;script&gt;</Code> tag in <Code>index.html</Code>.</LI>
-            <LI><Strong>How to Rebrand:</Strong>
-                <ol className="list-decimal list-inside ml-4 mt-2 space-y-1">
-                    <li>Open <Code>index.html</Code>.</li>
-                    <li>Find the <Code>&lt;script id="branding-config"&gt;</Code> tag.</li>
-                    <li>Change the <Code>appName</Code> and <Code>appAccent</Code> values to your brand.</li>
-                    <li>Save and redeploy.</li>
-                </ol>
-            </LI>
-        </UL>
-        
-        <H3>4. GHL Funnel Integration</H3>
-        <P>The project includes three pre-built HTML files for a GHL funnel: <Code>ghl-landing-page.html</Code>, <Code>ghl-pricing-page.html</Code>, and <Code>ghl-thank-you-page.html</Code>. These are for your end-users.</P>
-        <UL>
-            <LI><Strong>Implementation:</Strong> In your GHL funnel builder, copy the content from the HTML files into custom HTML blocks on each respective page.</LI>
-            <LI><Strong>Crucial:</Strong> Find all comments marked <Code>&lt;!-- NOTE FOR GHL USER: ... --&gt;</Code> and replace placeholder links (<Code>href="#"</Code>) with your actual GHL form links, checkout pages, etc.</LI>
-            <LI><Strong>Link Your App:</Strong> On the "Thank You" page in GHL, edit the "Go to the App" button to link to the public URL of your deployed application.</LI>
-        </UL>
-
-        <H3>5. Agency Whitelabel Sales Pages</H3>
-        <P>This project also includes pre-built HTML templates for selling this entire application to other agencies. You can view them here. These are designed to be imported into your own marketing platform (like GHL).</P>
-        <UL>
-            <LI><a href="/agency-sales-page.html" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View Agency Sales Page</a></LI>
-            <LI><a href="/agency-pricing-page.html" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View Agency Pricing Page</a></LI>
-            <LI><a href="/agency-onboarding-thank-you.html" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View Agency Onboarding Page</a></LI>
-        </UL>
-    </GuideContent>
-);
 
 export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
-    const [activeTab, setActiveTab] = useState('user');
-
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" aria-modal="true" role="dialog">
             <div className="relative w-full max-w-4xl bg-gray-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
                 <div className="p-6 flex justify-between items-center border-b border-gray-700 flex-shrink-0">
-                    <h2 className="text-2xl font-bold text-white">Help & Guides</h2>
+                    <h2 className="text-2xl font-bold text-white">User Guide</h2>
                     <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors" aria-label="Close help modal">
                         <CloseIcon className="w-7 h-7"/>
                     </button>
                 </div>
                 
-                <div className="border-b border-gray-700 px-6 flex-shrink-0">
-                    <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                        <button
-                            onClick={() => setActiveTab('user')}
-                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg ${activeTab === 'user' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}
-                        >
-                            End-User Guide
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('agency')}
-                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg ${activeTab === 'agency' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}
-                        >
-                            For Agencies / Developers
-                        </button>
-                    </nav>
-                </div>
-                
                 <div className="p-6 overflow-y-auto">
-                    {activeTab === 'user' ? <UserGuide /> : <AgencyGuide />}
+                    <UserGuide />
                 </div>
 
                  <div className="p-4 flex justify-end gap-4 border-t border-gray-700 flex-shrink-0">

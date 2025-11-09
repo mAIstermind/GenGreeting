@@ -56,6 +56,7 @@ export const promptTemplates: PromptTemplate[] = [
     name: 'Office Birthday Bash',
     description: 'A professional yet fun birthday card suitable for a colleague. Features office-related party elements.',
     template: `A stylish and professional birthday card illustration for an office setting. It features subtle, festive elements like balloons in corporate colors (blue, gray, white) and a cupcake with a single candle on a clean desk. The text 'Happy Birthday, \${firstName}!' is written in a modern, friendly font. The overall mood is celebratory but still appropriate for the workplace.`,
+    // FIX: Added missing 'thumbnail' property to resolve TypeScript error.
     thumbnail: `data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%231f2937'/%3e%3cpath d='M35 80 L 65 80 L 65 70 C 65 60, 35 60, 35 70 Z' fill='%239ca3af'/%3e%3cpath d='M40 70 L 60 70 L 60 65 L 40 65 Z' fill='%23d1d5db'/%3e%3cpath d='M50 65 L 50 50' stroke='white' stroke-width='3'/%3e%3cpath d='M49 48 L 51 48 L 51 45 C 51 42, 49 42, 49 45 Z' fill='%23fde047'/%3e%3ccircle cx='30' cy='30' r='10' fill='%2360a5fa' stroke='white' stroke-width='1'/%3e%3cpath d='M30 40 L 30 50' stroke='%2360a5fa' stroke-width='1'/%3e%3c/svg%3e`,
   },
   {
@@ -113,15 +114,7 @@ export const promptTemplates: PromptTemplate[] = [
     description: 'A clean, modern, and professional image featuring the recipient\'s name and email. Useful for creating personalized branding assets.',
     template: `Create a professional and stylish email signature image. It should prominently feature the name "\${firstName}". Also, subtly and elegantly, include the email address "\${email}". The design should be clean, modern, and suitable for a business context. Do not include any other text besides the name and email.`,
     thumbnail: `data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%231f2937'/%3e%3crect x='25' y='35' width='50' height='2' fill='white'/%3e%3crect x='25' y='65' width='50' height='2' fill='white'/%3e%3ctext x='50' y='55' font-size='12' fill='white' text-anchor='middle' font-family='Arial'%3eSIGNATURE%3c/text%3e%3c/svg%3e`,
-  },
-  {
-    id: 'welcome_banner',
-    name: 'Personalized Welcome Banner',
-    description: 'Creates a sleek, modern banner for welcome emails, featuring the contact\'s name and confirming their email address.',
-    template: `Create a professional and clean welcome banner image suitable for an email header. The design should be modern and minimalist, with a cool color palette (blues, grays). The banner must prominently feature the text "Welcome Aboard, \${firstName}!". Below this main text, in a smaller, clean font, include the confirmation text: "Your access has been granted for \${email}". The overall aesthetic should be professional and welcoming, suitable for a SaaS product or online service. Do not include any other text.`,
-    thumbnail: `data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%231f2937'/%3e%3crect x='10' y='30' width='80' height='40' rx='5' fill='%23374151'/%3e%3cpath d='M10 40 Q 50 20, 90 40' stroke='%233b82f6' stroke-width='2' fill='none'/%3e%3ctext x='50' y='50' font-size='10' fill='white' text-anchor='middle' font-family='Arial' font-weight='bold'%3eWelcome!%3c/text%3e%3ctext x='50' y='62' font-size='6' fill='%23d1d5db' text-anchor='middle' font-family='Arial'%3eemail@example.com%3c/text%3e%3c/svg%3e`,
   }
 ];
 
-// FIX: Export 'defaultPromptTemplate' to be used for default state in components.
 export const defaultPromptTemplate = promptTemplates[0];
