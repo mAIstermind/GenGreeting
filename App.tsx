@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import JSZip from 'jszip';
@@ -560,10 +561,10 @@ function App() {
           <div className="space-y-8">
             <div className="flex justify-center border-b border-gray-200 dark:border-gray-700">
                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button onClick={() => setActiveTab('csv')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg ${activeTab === 'csv' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
+                    <button onClick={() => setActiveTab('csv')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base sm:text-lg ${activeTab === 'csv' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
                         Batch Generate via CSV
                     </button>
-                    <button onClick={() => setActiveTab('single')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg ${activeTab === 'single' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
+                    <button onClick={() => setActiveTab('single')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base sm:text-lg ${activeTab === 'single' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
                         Generate a Single Image
                     </button>
                 </nav>

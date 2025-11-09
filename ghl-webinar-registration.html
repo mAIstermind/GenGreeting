@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- WHITELABEL: Title can be dynamic, e.g., Free Webinar - {{ agency.name }} -->
+    <title>Free Webinar - AI Greetings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+        .gradient-bg { background-color: #0B1120; background-image: radial-gradient(at 10% 20%, hsla(217, 78%, 20%, 1) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(269, 78%, 25%, 1) 0px, transparent 50%), radial-gradient(at 80% 90%, hsla(300, 78%, 25%, 1) 0px, transparent 50%); }
+        .feature-card { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Header -->
+    <header class="py-5 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-tighter">
+                <!-- WHITELABEL: App name can be dynamic, e.g., {{ agency.appName | default: 'AI Greetings' }} -->
+                <span class="text-blue-400">AI</span>Greetings
+            </h1>
+            <a href="/ghl-landing-page.html" class="text-gray-300 hover:text-white transition-colors">
+                Back to Home
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="gradient-bg">
+        <section class="py-20 px-6">
+            <div class="container mx-auto grid lg:grid-cols-2 gap-16 items-center">
+                
+                <!-- Left Column: Webinar Info -->
+                <div class="text-center lg:text-left">
+                    <span class="text-blue-400 font-semibold uppercase tracking-wider">Free Live Training</span>
+                    <h2 class="text-4xl md:text-5xl font-extrabold my-4 leading-tight">10x Your Outreach With AI That Gets Replies</h2>
+                    <p class="text-lg text-gray-300 mb-8">
+                        Stop sending emails that get ignored. Join our free live webinar and discover how to use hyper-personalized AI images to cut through the noise, book more meetings, and close more deals.
+                    </p>
+                    <div class="space-y-4 text-left max-w-md mx-auto lg:mx-0">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-green-500 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>Learn the "Pattern Interrupt" Secret:</strong> Why personalized images are the ultimate way to stand out in a crowded inbox.</span>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-green-500 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>Live Demo:</strong> Watch us generate hundreds of unique greeting cards from a simple CSV file in under 5 minutes.</span>
+                        </div>
+                        <div class="flex items-start gap-3">
+                             <svg class="w-6 h-6 text-green-500 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>Exclusive Bonus:</strong> All live attendees will receive a lifetime bonus of <strong class="text-white">1,000 extra credits/mo</strong> to use with the app.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Signup Form -->
+                <div class="w-full max-w-md mx-auto">
+                    <div class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+                        <h3 class="text-2xl font-bold text-center mb-6">Save Your Spot!</h3>
+                        
+                        <!-- 
+                            NOTE FOR GHL USER: 
+                            Replace the div below with your GHL Form embed code.
+                            Make sure your GHL Form redirects to your "Webinar Thank You" page on submission.
+                        -->
+                        <div class="bg-gray-700 rounded-lg p-8 text-center">
+                            <p class="text-gray-400">Your GHL Signup Form Goes Here.</p>
+                        </div>
+                         <!-- End GHL Form Placeholder -->
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-center py-6">
+        <!-- WHITELABEL: Copyright can be dynamic, e.g., &copy; 2025 {{ agency.name }}. All Rights Reserved. -->
+        <p class="text-gray-500">&copy; 2025 AI Greetings mAIstermind.com - All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>
