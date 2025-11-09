@@ -1,4 +1,5 @@
 
+
 import type { AgencyConfig } from "../types.ts";
 
 const callApi = async (action: string, payload: object) => {
@@ -26,8 +27,15 @@ const callApi = async (action: string, payload: object) => {
     });
 
     if (!response.ok) {
-        const errorBody = await response.json();
-        throw new Error(errorBody.error || 'API request failed');
+        const errorText = await response.text();
+        try {
+            // It might be a JSON error object, so we try to parse it.
+            const errorJson = JSON.parse(errorText);
+            throw new Error(errorJson.error || 'API request failed');
+        } catch (e) {
+            // If parsing fails, it's a plain text error from the server.
+            throw new Error(errorText || 'API request failed');
+        }
     }
 
     const result = await response.json();
