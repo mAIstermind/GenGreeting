@@ -10,6 +10,13 @@ export interface PromptTemplate {
 
 export const promptTemplates: PromptTemplate[] = [
   {
+    id: 'initial_avatar',
+    name: 'Personalized Initial Avatar',
+    description: 'Creates a stylish, modern avatar featuring the first initial of the person\'s name. Great for generating personalized profile pictures in bulk.',
+    template: `A minimalist and professional circular avatar. The design features the single letter "\${firstInitial}" in a bold, white, sans-serif font. The background of the circle is a vibrant gradient transitioning from deep blue to electric purple. The overall aesthetic is clean, modern, and eye-catching.`,
+    thumbnail: `data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%231f2937'/%3e%3ccircle cx='50' cy='50' r='40'%3e%3cdefs%3e%3clinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3e%3cstop offset='0%25' style='stop-color:%234f46e5;stop-opacity:1' /%3e%3cstop offset='100%25' style='stop-color:%23a855f7;stop-opacity:1' /%3e%3c/linearGradient%3e%3c/defs%3e%3c/circle%3e%3cpath d='M50 50' fill='url(%23grad)'/%3e%3ccircle cx='50' cy='50' r='40' fill='url(%23grad)'/%3e%3ctext x='50' y='68' font-size='50' fill='white' text-anchor='middle' font-family='Arial' font-weight='bold'%3eA%3c/text%3e%3c/svg%3e`,
+  },
+  {
     id: 'unfocused_audience',
     name: 'Unfocused Audience',
     description: 'A colorful, humorous cartoon of an office meeting where the audience is distracted by their phones. Perfect for a lighthearted way to grab attention.',

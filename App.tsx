@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import JSZip from 'jszip';
@@ -426,7 +427,10 @@ function App() {
           const contact = parsedContacts[i];
           try {
             const firstName = contact.name.split(' ')[0];
-            let imagePrompt = selectedTemplate.template.replace(/\${firstName}/g, firstName);
+            const firstInitial = firstName.charAt(0).toUpperCase();
+            let imagePrompt = selectedTemplate.template
+                .replace(/\${firstName}/g, firstName)
+                .replace(/\${firstInitial}/g, firstInitial);
 
             if (templateRequiresEmail) {
                 if (contact.email) {
