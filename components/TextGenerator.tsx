@@ -1,5 +1,4 @@
 
-
 import React, { useState, useRef, useCallback } from 'react';
 import { promptTemplates, defaultPromptTemplate } from '../promptTemplates';
 import { CheckIcon } from './icons/CheckIcon';
@@ -33,6 +32,8 @@ const fileToBase64 = (file: File): Promise<string> => {
     });
 };
 
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
+
 export const TextGenerator: React.FC<TextGeneratorProps> = ({ onGenerate, isOnline, remainingCredits }) => {
     const [rows, setRows] = useState<Row[]>([
         { id: Date.now(), name: '', imageUrl: '', imageFile: null, imagePreview: null, incorporateImage: true, error: null }
@@ -42,6 +43,11 @@ export const TextGenerator: React.FC<TextGeneratorProps> = ({ onGenerate, isOnli
     const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
     const addRow = () => {
+        setGlobalError('');
+        if (rows.length >= remainingCredits) {
+             setGlobalError(`You can add a maximum of ${remainingCredits} contacts based on your remaining credits.`);
+             return;
+        }
         setRows(prevRows => [...prevRows, { id: Date.now(), name: '', imageUrl: '', imageFile: null, imagePreview: null, incorporateImage: true, error: null }]);
     };
 
@@ -57,9 +63,9 @@ export const TextGenerator: React.FC<TextGeneratorProps> = ({ onGenerate, isOnli
         const file = e.target.files?.[0];
         if (file) {
             let error = null;
-            if (file.size > 2 * 1024 * 1024) {
-                error = 'Image must be < 2MB.';
-            } else if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            if (file.size > MAX_FILE_SIZE) {
+                error = 'Image must be < 4MB.';
+            } else if (!['image/jpeg', 'image/png'].includes(file.type)) {
                 error = 'Must be JPG or PNG.';
             }
 
@@ -169,9 +175,8 @@ export const TextGenerator: React.FC<TextGeneratorProps> = ({ onGenerate, isOnli
                                             </button>
                                             {row.error && <p className="text-xs text-red-400">{row.error}</p>}
                                             <input
-                                                // FIX: The ref callback function should not return a value. Using a block statement `{}` resolves the TypeScript error.
                                                 ref={el => { fileInputRefs.current[row.id] = el; }}
-                                                type="file" className="sr-only" accept="image/png, image/jpeg, image/webp"
+                                                type="file" className="sr-only" accept="image/png, image/jpeg"
                                                 onChange={(e) => handleFileChange(e, row.id)}
                                             />
                                             {rows.length > 1 && (
@@ -186,12 +191,13 @@ export const TextGenerator: React.FC<TextGeneratorProps> = ({ onGenerate, isOnli
                             <button
                                 type="button"
                                 onClick={addRow}
-                                className="w-full text-sm font-semibold text-blue-500 hover:text-blue-400 py-2"
+                                className="w-full text-sm font-semibold text-blue-500 hover:text-blue-400 py-2 disabled:text-gray-500 disabled:cursor-not-allowed"
+                                disabled={rows.length >= remainingCredits}
                             >
                                 + Add another person
                             </button>
                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-                                Image Guidance: Square JPG/PNG works best, max 2MB.
+                                Image Guidance: Square JPG/PNG format, max 4MB.
                             </p>
                         </div>
 

@@ -97,7 +97,7 @@ function App() {
   const [brandLogo, setBrandLogo] = useState<string | null>(() => localStorage.getItem('brand_logo'));
   const [isBranding, setIsBranding] = useState(false);
   const [activeTab, setActiveTab] = useState<'csv' | 'single'>('csv');
-  const [batchMode, setBatchMode] = useState<BatchMode>('csv');
+  const [batchMode, setBatchMode] = useState<BatchMode>('text');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   // --- Theme State ---
@@ -615,11 +615,11 @@ function App() {
                  <div>
                     <div className="flex justify-center border-b border-gray-700/60 mb-8">
                         <nav className="-mb-px flex space-x-6" aria-label="Batch Mode">
+                            <button onClick={() => setBatchMode('text')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-base ${batchMode === 'text' ? 'border-gray-300 text-gray-100' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
+                                From Text
+                            </button>
                             <button onClick={() => setBatchMode('csv')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-base ${batchMode === 'csv' ? 'border-gray-300 text-gray-100' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
                                 From CSV
-                            </button>
-                             <button onClick={() => setBatchMode('text')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-base ${batchMode === 'text' ? 'border-gray-300 text-gray-100' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
-                                From Text
                             </button>
                         </nav>
                     </div>
