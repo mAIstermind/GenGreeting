@@ -24,8 +24,9 @@ export default async function handler(req: any, res: any) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
+    // Server configuration check
     if (!GHL_API_KEY || !GHL_PASSWORD_FIELD_ID || !GHL_QUOTA_FIELD_ID || !GHL_USED_FIELD_ID || !GHL_PLAN_FIELD_ID) {
-        console.error("Server configuration error: One or more GHL Custom Field IDs are not set as environment variables.");
+        console.error("Server configuration error: One or more GHL environment variables are missing.");
         return res.status(500).json({ error: 'Registration service is not configured correctly on the server.' });
     }
 
@@ -35,6 +36,9 @@ export default async function handler(req: any, res: any) {
         return res.status(400).json({ error: 'Email and password are required.' });
     }
 
+    // Step-tracking variable for better error logging
+    let step = 'START';
+
     try {
         const ghlHeaders = {
             'Authorization': `Bearer ${GHL_API_KEY}`,
@@ -42,29 +46,38 @@ export default async function handler(req: any, res: any) {
             'Version': '2021-07-28'
         };
 
-        // Step 1: Securely hash the password before storing it.
+        step = 'HASH_PASSWORD';
         const hashedPassword = await hash(password, 10); 
 
-        // Step 2: Check if the contact already exists to determine their bonus status.
+        step = 'LOOKUP_CONTACT';
         const searchResponse = await fetch(`${GHL_API_URL}lookup?email=${encodeURIComponent(email)}`, { headers: ghlHeaders });
         
         let existingContact = null;
         if (searchResponse.ok) {
             const searchData = await searchResponse.json();
             existingContact = searchData.contacts?.[0];
+        } else if (searchResponse.status !== 404) {
+            // If it's not a 404 (not found), it's a real error.
+            const errorText = await searchResponse.text();
+            console.error("GHL Contact Lookup Error:", errorText);
+            throw new Error('Could not verify user with CRM.');
         }
+        
+        step = 'DETERMINE_PLAN_AND_TAGS';
+        // Proactively merge tags instead of overwriting them.
+        const existingTags = new Set(existingContact?.tags || []);
+        existingTags.add('pwa-free-trial');
 
-        // Step 3: Determine initial quota and plan based on whether they have the webinar tag.
         const isWebinarAttendee = existingContact?.tags?.includes(WEBINAR_ATTENDEE_TAG);
         const initialQuota = isWebinarAttendee ? 50 : 10;
         const initialPlan = isWebinarAttendee ? 'Webinar Free Trial' : 'Free Trial';
 
-        // Step 4: Prepare the contact data, including custom fields.
+        step = 'PREPARE_UPSERT_DATA';
         const contactData = {
             email: email.toLowerCase(),
             firstName: firstName || '',
             lastName: lastName || '',
-            tags: ['pwa-free-trial'], // Add the standard tag for all new signups
+            tags: Array.from(existingTags), // Use the merged set of tags
             customFields: [
                 { id: GHL_PASSWORD_FIELD_ID, field_value: hashedPassword },
                 { id: GHL_QUOTA_FIELD_ID, field_value: initialQuota },
@@ -73,9 +86,7 @@ export default async function handler(req: any, res: any) {
             ]
         };
 
-        // Step 5: Use GHL's upsert functionality to create or update the contact.
-        // This is more robust as it handles both new registrations and existing contacts
-        // who are signing up for the app for the first time.
+        step = 'CALL_UPSERT_API';
         const upsertResponse = await fetch(`${GHL_API_URL}upsert`, {
             method: 'POST',
             headers: ghlHeaders,
@@ -85,11 +96,20 @@ export default async function handler(req: any, res: any) {
         if (!upsertResponse.ok) {
             const errorText = await upsertResponse.text();
             console.error("GHL Upsert Error:", errorText);
-            throw new Error(`GHL API Error: Could not create or update contact.`);
+            // This is a common failure point if a custom field ID is wrong.
+            throw new Error(`GHL API Error: Could not create or update contact. This may be due to an incorrect custom field ID in the server configuration.`);
         }
 
+        step = 'PARSE_UPSERT_RESPONSE';
         const ghlContactResponse = await upsertResponse.json();
         
+        // Add a check to ensure the response structure is as expected before accessing nested properties.
+        if (!ghlContactResponse?.contact?.id) {
+            console.error("Unexpected GHL Upsert Response:", ghlContactResponse);
+            throw new Error('GHL API returned an unexpected response structure after upsert.');
+        }
+
+        step = 'FINALIZE_RESPONSE';
         return res.status(200).json({ 
             success: true, 
             message: 'Registration successful. Credits have been granted.',
@@ -103,7 +123,17 @@ export default async function handler(req: any, res: any) {
         });
 
     } catch (error: any) {
-        console.error('Registration API Error:', error);
+        console.error('--- REGISTRATION API CRASH ---');
+        // Log the step where the failure occurred for easier debugging.
+        console.error(`Failed at step: ${step}`); 
+        // Create a safe version of the request body that excludes the password for logging.
+        const safeBody = { ...req.body };
+        delete safeBody.password;
+        console.error('Safe Request Body:', safeBody);
+        console.error('Error Message:', error.message);
+        // We can log the stack for more detail in Vercel logs.
+        console.error('Stack:', error.stack);
+        
         return res.status(500).json({ error: error.message || 'Registration failed due to an internal server error.' });
     }
 }

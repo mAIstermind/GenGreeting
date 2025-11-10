@@ -36,25 +36,29 @@ export default async function handler(req: any, res: any) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // Validate server configuration
-    if (!GHL_API_KEY || !GHL_PASSWORD_FIELD_ID) {
-        console.error("Server configuration error: GHL_API_KEY or GHL_PASSWORD_FIELD_ID is missing.");
-        return res.status(500).json({ error: 'Authentication service is not configured correctly on the server.' });
-    }
-
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required.' });
-    }
-
+    // Step-tracking variable for better error logging
+    let step = 'START';
+    
     try {
+        step = 'VALIDATE_CONFIG_AND_BODY';
+        // Validate server configuration
+        if (!GHL_API_KEY || !GHL_PASSWORD_FIELD_ID) {
+            console.error("Server configuration error: GHL_API_KEY or GHL_PASSWORD_FIELD_ID is missing.");
+            return res.status(500).json({ error: 'Authentication service is not configured correctly on the server.' });
+        }
+
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required.' });
+        }
+
         const ghlHeaders = {
             'Authorization': `Bearer ${GHL_API_KEY}`,
             'Content-Type': 'application/json',
             'Version': '2021-07-28'
         };
 
-        // Step 1: Find the contact in GHL by email using the /lookup endpoint
+        step = 'LOOKUP_CONTACT';
         const searchResponse = await fetch(`${GHL_API_URL}lookup?email=${encodeURIComponent(email)}`, { headers: ghlHeaders });
         
         if (!searchResponse.ok) {
@@ -71,21 +75,21 @@ export default async function handler(req: any, res: any) {
             return res.status(401).json({ error: 'Invalid email or password.' });
         }
 
-        // Step 2: Correctly extract the stored password hash from the custom fields array
+        step = 'EXTRACT_PASSWORD_HASH';
         const storedHash = getCustomFieldValue(contact.customFields, GHL_PASSWORD_FIELD_ID);
         
         if (!storedHash) {
              return res.status(401).json({ error: 'Account not fully set up. Please register again.' });
         }
         
-        // Step 3: Verify the provided password against the stored hash
+        step = 'COMPARE_PASSWORD';
         const isMatch = await compare(password, storedHash);
 
         if (!isMatch) {
             return res.status(401).json({ error: 'Invalid email or password.' });
         }
         
-        // Step 4: Extract user data and return a success response
+        step = 'FINALIZE_RESPONSE';
         const userData = {
             contactId: contact.id,
             email: contact.email,
@@ -101,7 +105,11 @@ export default async function handler(req: any, res: any) {
         });
 
     } catch (error: any) {
-        console.error('Login API Error:', error);
+        console.error('--- LOGIN API CRASH ---');
+        console.error(`Failed at step: ${step}`);
+        console.error('Request Email:', req.body.email); // Log email for context, but never the password
+        console.error('Error Message:', error.message);
+        console.error('Stack:', error.stack);
         return res.status(500).json({ error: 'Login failed due to an internal server error.' });
     }
 }
