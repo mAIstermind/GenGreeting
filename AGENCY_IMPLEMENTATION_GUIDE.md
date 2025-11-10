@@ -35,8 +35,12 @@ Your application will not work until you configure its security keys and API key
 | ----------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `GEMINI_API_KEY`        | Your Google Gemini API Key.                                                                             | `AIzaSy...`                           |
 | `GHL_API_KEY`           | Your GoHighLevel API Key (find it in your GHL account settings).                                        | `ey...`                               |
-| `GHL_PASSWORD_FIELD_ID` | The ID of the GHL custom field you create for storing user passwords (see Section 5 for instructions).  | `z8y...`                              |
+| `GHL_PASSWORD_FIELD_ID` | The ID of the GHL custom field for storing user passwords (see Section 5).                              | `z8y...`                              |
+| `GHL_QUOTA_FIELD_ID`    | The ID of the GHL custom field for the user's monthly generation limit.                                 | `a1b...`                              |
+| `GHL_USED_FIELD_ID`     | The ID of the GHL custom field for tracking a user's used credits in a cycle.                           | `c2d...`                              |
+| `GHL_PLAN_FIELD_ID`     | The ID of the GHL custom field for storing the user's current subscription plan name.                   | `e3f...`                              |
 | `JWT_SECRET`            | A long, random, secret string used to sign user session tokens. Use a password generator to create this. | `a_very_long_random_secure_string_!@#` |
+
 
 ## 3. Connecting a Custom Domain (Recommended)
 
@@ -76,6 +80,7 @@ This application uses GHL as its user database. When a user registers, a new Con
 4.  **Field Name:** Give it a clear name, like `App Password`.
 5.  **Placeholder:** You can write something like `Do not edit this field`.
 6.  Click **"Save"**.
+7.  **Repeat this process** to create the other required fields: `App Monthly Quota` (Number), `App Credits Used` (Number), and `App Current Plan` (Text).
 
 ### Step 2: Get the Custom Field ID
 1.  After saving, find the new custom field you just created in the list.
@@ -85,7 +90,8 @@ This application uses GHL as its user database. When a user registers, a new Con
 ### Step 3: Set Your Environment Variables
 1.  Go back to your hosting provider (Vercel/Netlify).
 2.  Set the `GHL_PASSWORD_FIELD_ID` environment variable to the **Key** you just copied from GHL.
-3.  Ensure your `GHL_API_KEY` and `JWT_SECRET` are also set correctly as described in Section 2.
+3.  Repeat this for `GHL_QUOTA_FIELD_ID`, `GHL_USED_FIELD_ID`, and `GHL_PLAN_FIELD_ID` with their respective keys.
+4.  Ensure your `GHL_API_KEY` and `JWT_SECRET` are also set correctly as described in Section 2.
 
 Your authentication system is now fully configured.
 

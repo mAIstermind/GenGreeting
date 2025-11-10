@@ -7,10 +7,11 @@ const GHL_API_KEY = process.env.GHL_API_KEY;
 const GHL_API_URL = 'https://services.leadconnectorhq.com/contacts/';
 
 // IMPORTANT: These custom field IDs must be set in your Vercel/Netlify environment variables.
-const GHL_PASSWORD_FIELD_ID = process.env.GHL_PWA_PASSWORD_FIELD_ID;
-const GHL_QUOTA_FIELD_ID = process.env.GHL_PWA_QUOTA_FIELD_ID;
-const GHL_USED_FIELD_ID = process.env.GHL_PWA_USED_FIELD_ID;
-const GHL_PLAN_FIELD_ID = process.env.GHL_PWA_PLAN_FIELD_ID;
+// These variables have been aligned with the documentation to remove the `_PWA_` prefix.
+const GHL_PASSWORD_FIELD_ID = process.env.GHL_PASSWORD_FIELD_ID;
+const GHL_QUOTA_FIELD_ID = process.env.GHL_QUOTA_FIELD_ID;
+const GHL_USED_FIELD_ID = process.env.GHL_USED_FIELD_ID;
+const GHL_PLAN_FIELD_ID = process.env.GHL_PLAN_FIELD_ID;
 
 // The specific tag that identifies a user who should get a bonus.
 const WEBINAR_ATTENDEE_TAG = 'pwa-webinar-attendee'; 
