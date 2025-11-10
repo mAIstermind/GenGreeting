@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.28.0",
+    "bcryptjs": "^3.0.3",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
     "papaparse": "^5.4.1",

@@ -1,6 +1,6 @@
 {
-  "name": "AI Greetings - Card Generator",
-  "short_name": "AI Greetings",
+  "name": "GenGreeting - AI Card Generator",
+  "short_name": "GenGreeting",
   "description": "Upload a CSV of contacts to generate personalized greeting cards using AI. Each card features a unique illustration based on your prompt and includes the recipient's name.",
   "start_url": ".",
   "display": "standalone",
@@ -8,13 +8,13 @@
   "theme_color": "#111827",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3csvg width='512' height='512' viewBox='0 0 512 512' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='512' height='512' fill='%23111827'/%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M394.667 256C394.667 334.211 330.211 398.667 252 398.667C173.789 398.667 109.333 334.211 109.333 256C109.333 177.789 173.789 113.333 252 113.333V154.667C197.689 154.667 153.333 199.022 153.333 256C153.333 312.978 197.689 357.333 252 357.333C306.311 357.333 350.667 312.978 350.667 256H252V214.667H394.667V256Z' fill='white'/%3e%3cpath d='M252 256H350.667V214.667H252V256Z' fill='%2360A5FA'/%3e%3c/svg%3e",
+      "src": "data:image/svg+xml,%3csvg width='512' height='512' viewBox='0 0 200 200' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='100' cy='100' r='95' fill='%23f3f4f6'/%3e%3cdefs%3e%3clinearGradient id='logo-gradient' x1='28' y1='28' x2='172' y2='172' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%232563EB'/%3e%3cstop offset='1' stop-color='%2310B981'/%3e%3c/linearGradient%3e%3c/defs%3e%3cpath d='M158.5 60.5C158.5 35.3857 121.114 28 100 28C67.5 28 35 55.5 35 100C35 144.5 76 172 100 172C111.5 172 125 167 125 155' stroke='url(%23logo-gradient)' stroke-width='20' stroke-linecap='round'/%3e%3cpath d='M152 28L180 55L152 82' stroke='url(%23logo-gradient)' stroke-width='20' stroke-linecap='round' stroke-linejoin='round'/%3e%3cpath d='M70 115L130 85L130 130L70 145L70 115Z' fill='%23D1D5DB'/%3e%3cpath d='M70 115L100 130L130 115' stroke-width='6' stroke='%23E5E7EB' stroke-linejoin='round' stroke-linecap='round'/%3e%3cpath d='M60 70L120 40L120 85L60 100L60 70Z' fill='%23E5E7EB'/%3e%3cpath d='M60 70L90 85L120 70' stroke-width='6' stroke='%23F9FAFB' stroke-linejoin='round' stroke-linecap='round'/%3e%3c/svg%3e",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,%3csvg width='512' height='512' viewBox='0 0 512 512' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='512' height='512' fill='%23111827'/%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M394.667 256C394.667 334.211 330.211 398.667 252 398.667C173.789 398.667 109.333 334.211 109.333 256C109.333 177.789 173.789 113.333 252 113.333V154.667C197.689 154.667 153.333 199.022 153.333 256C153.333 312.978 197.689 357.333 252 357.333C306.311 357.333 350.667 312.978 350.667 256H252V214.667H394.667V256Z' fill='white'/%3e%3cpath d='M252 256H350.667V214.667H252V256Z' fill='%2360A5FA'/%3e%3c/svg%3e",
+      "src": "data:image/svg+xml,%3csvg width='512' height='512' viewBox='0 0 200 200' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='100' cy='100' r='95' fill='%23f3f4f6'/%3e%3cdefs%3e%3clinearGradient id='logo-gradient' x1='28' y1='28' x2='172' y2='172' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%232563EB'/%3e%3cstop offset='1' stop-color='%2310B981'/%3e%3c/linearGradient%3e%3c/defs%3e%3cpath d='M158.5 60.5C158.5 35.3857 121.114 28 100 28C67.5 28 35 55.5 35 100C35 144.5 76 172 100 172C111.5 172 125 167 125 155' stroke='url(%23logo-gradient)' stroke-width='20' stroke-linecap='round'/%3e%3cpath d='M152 28L180 55L152 82' stroke='url(%23logo-gradient)' stroke-width='20' stroke-linecap='round' stroke-linejoin='round'/%3e%3cpath d='M70 115L130 85L130 130L70 145L70 115Z' fill='%23D1D5DB'/%3e%3cpath d='M70 115L100 130L130 115' stroke-width='6' stroke='%23E5E7EB' stroke-linejoin='round' stroke-linecap='round'/%3e%3cpath d='M60 70L120 40L120 85L60 100L60 70Z' fill='%23E5E7EB'/%3e%3cpath d='M60 70L90 85L120 70' stroke-width='6' stroke='%23F9FAFB' stroke-linejoin='round' stroke-linecap='round'/%3e%3c/svg%3e",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"

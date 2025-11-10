@@ -1,5 +1,5 @@
 {
-  "name": "AI Greetings - Card Generator",
+  "name": "GenGreeting - AI Card Generator",
   "description": "Upload a CSV of contacts to generate personalized greeting cards using AI. Each card features a unique illustration based on your prompt and includes the recipient's name.",
   "requestFramePermissions": []
 }

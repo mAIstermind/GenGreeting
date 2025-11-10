@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF--8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <!-- WHITELABEL: Title can be dynamic, e.g., Pricing - {{ agency.name }} -->
+    <title>Pricing - GenGreeting</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+        .gradient-bg { background-color: #0B1120; background-image: radial-gradient(at 10% 20%, hsla(217, 78%, 20%, 1) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(269, 78%, 25%, 1) 0px, transparent 50%), radial-gradient(at 80% 90%, hsla(300, 78%, 25%, 1) 0px, transparent 50%); }
+        /* Toggle switch styles */
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #3b82f6; /* bg-blue-600 */
+        }
+        .toggle-checkbox:checked + .toggle-label::after {
+            transform: translateX(100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Header -->
+    <header class="py-5 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <img src="data:image/svg+xml,%3csvg height='40' viewBox='0 0 300 66' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cg transform='translate(0, 0) scale(0.3)'%3e%3ccircle cx='100' cy='100' r='95' fill='%23f3f4f6'/%3e%3cdefs%3e%3clinearGradient id='logo-gradient-full' x1='28' y1='28' x2='172' y2='172' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%232563EB'/%3e%3cstop offset='1' stop-color='%2310B981'/%3e%3c/linearGradient%3e%3c/defs%3e%3cpath d='M158.5 60.5C158.5 35.3857 121.114 28 100 28C67.5 28 35 55.5 35 100C35 144.5 76 172 100 172C111.5 172 125 167 125 155' stroke='url(%23logo-gradient-full)' stroke-width='20' stroke-linecap='round'/%3e%3cpath d='M152 28L180 55L152 82' stroke='url(%23logo-gradient-full)' stroke-width='20' stroke-linecap='round' stroke-linejoin='round'/%3e%3cpath d='M70 115L130 85L130 130L70 145L70 115Z' fill='%23D1D5DB'/%3e%3cpath d='M70 115L100 130L130 115' stroke-width='6' stroke='%23E5E7EB' stroke-linejoin='round' stroke-linecap='round'/%3e%3cpath d='M60 70L120 40L120 85L60 100L60 70Z' fill='%23E5E7EB'/%3e%3cpath d='M60 70L90 85L120 70' stroke-width='6' stroke='%23F9FAFB' stroke-linejoin='round' stroke-linecap='round'/%3e%3c/g%3e%3ctext x='185' y='42' font-family='Inter, sans-serif' font-size='32' font-weight='bold' text-anchor='middle'%3e%3ctspan fill='%231E40AF'%3eGen%3c/tspan%3e%3ctspan fill='%236B7280'%3eGreeting%3c/tspan%3e%3c/text%3e%3c/svg%3e" alt="GenGreeting Logo" class="h-10">
+            <!-- NOTE FOR GHL USER: Replace '#' with your main landing page URL -->
+            <a href="/ghl-landing-page.html" class="text-gray-300 hover:text-white transition-colors">
+                Back to Home
+            </a>
+        </div>
+    </header>
+
+    <!-- Pricing Section -->
+    <main class="gradient-bg py-20 px-6">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Choose Your Plan</h2>
+            <p class="max-w-2xl mx-auto text-lg text-gray-300 mb-8">
+                Upgrade to unlock more generations, add your personal brand, and download all your cards with one click.
+            </p>
+
+            <!-- Billing Toggle -->
+            <div class="flex items-center justify-center space-x-4 mb-12">
+                <span class="font-medium text-lg" id="billing-monthly-label">Monthly</span>
+                <input type="checkbox" id="billing-toggle" class="toggle-checkbox hidden">
+                <label for="billing-toggle" class="toggle-label relative w-12 h-6 bg-gray-600 rounded-full cursor-pointer transition-colors duration-300 ease-in-out after:content-[''] after:absolute after:w-5 after:h-5 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 after:transition-transform after:duration-300 after:ease-in-out"></label>
+                <span class="font-medium text-lg text-gray-400" id="billing-quarterly-label">
+                    Quarterly <span class="text-sm text-green-400">(Save 15%)</span>
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-start">
+
+                <!-- Pro Plan -->
+                <div class="w-full bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700 rounded-2xl p-8 h-full flex flex-col">
+                    <h3 class="text-2xl font-bold text-white">Pro</h3>
+                    <p class="text-5xl font-extrabold my-4">
+                        $<span id="price-pro">29</span><span class="text-lg font-medium text-gray-300" id="billing-cycle-pro">/mo</span>
+                    </p>
+                    <p class="text-gray-400 mb-6">For individual power users</p>
+                    <ul class="text-left space-y-3 mb-8 flex-grow">
+                        <li class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <strong>500</strong> card generations/mo
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                             Add your own custom branding
+                        </li>
+                         <li class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Download all cards as a ZIP
+                        </li>
+                    </ul>
+                     <!-- NOTE FOR GHL USER: Replace '#' with your GHL Checkout/Order Form link for the Pro plan -->
+                    <a href="#" class="w-full block text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                        Choose Pro
+                    </a>
+                </div>
+
+                <!-- Business Plan (Most Popular) -->
+                <div class="w-full bg-blue-900/50 backdrop-blur-sm border-2 border-blue-500 rounded-2xl p-8 shadow-2xl scale-105 relative h-full flex flex-col">
+                    <div class="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
+                        <span class="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Most Popular</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white">Business</h3>
+                    <p class="text-5xl font-extrabold my-4">
+                        $<span id="price-business">79</span><span class="text-lg font-medium text-gray-300" id="billing-cycle-business">/mo</span>
+                    </p>
+                    <p class="text-blue-300 mb-6">For small businesses & teams</p>
+                    <ul class="text-left space-y-3 mb-8 flex-grow">
+                        <li class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <strong>2,500</strong> card generations/mo
+                        </li>
+                         <li class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            All features from Pro plan
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Priority support
+                        </li>
+                    </ul>
+                     <!-- NOTE FOR GHL USER: Replace '#' with your GHL Checkout/Order Form link for the Business plan -->
+                    <a href="#" class="w-full block text-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                        Choose Business
+                    </a>
+                </div>
+                
+                <!-- Agency Plan -->
+                <div class="w-full bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700 rounded-2xl p-8 h-full flex flex-col">
+                    <h3 class="text-2xl font-bold text-white">Agency</h3>
+                    <p class="text-5xl font-extrabold my-4">
+                        $<span id="price-agency">199</span><span class="text-lg font-medium text-gray-300" id="billing-cycle-agency">/mo</span>
+                    </p>
+                    <p class="text-gray-400 mb-6">For agencies & heavy usage</p>
+                    <ul class="text-left space-y-3 mb-8 flex-grow">
+                        <li class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <strong>10,000</strong> card generations/mo
+                        </li>
+                         <li class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            All features from Business plan
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Team access (Coming Soon)
+                        </li>
+                    </ul>
+                     <!-- NOTE FOR GHL USER: Replace '#' with your GHL Checkout/Order Form link for the Agency plan -->
+                    <a href="#" class="w-full block text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                        Choose Agency
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-center py-6">
+        <!-- WHITELABEL: Copyright can be dynamic, e.g., &copy; 2025 {{ agency.name }}. All Rights Reserved. -->
+        <p class="text-gray-500">&copy; 2025 GenGreeting. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggle = document.getElementById('billing-toggle');
+            const monthlyLabel = document.getElementById('billing-monthly-label');
+            const quarterlyLabel = document.getElementById('billing-quarterly-label');
+
+            const prices = {
+                pro: { monthly: 29, quarterly: 74 },
+                business: { monthly: 79, quarterly: 201 },
+                agency: { monthly: 199, quarterly: 507 }
+            };
+
+            const priceElements = {
+                pro: document.getElementById('price-pro'),
+                business: document.getElementById('price-business'),
+                agency: document.getElementById('price-agency')
+            };
+
+            const cycleElements = {
+                pro: document.getElementById('billing-cycle-pro'),
+                business: document.getElementById('billing-cycle-business'),
+                agency: document.getElementById('billing-cycle-agency')
+            };
+            
+            function updatePrices(isQuarterly) {
+                if (isQuarterly) {
+                    monthlyLabel.classList.add('text-gray-400');
+                    monthlyLabel.classList.remove('text-white');
+                    quarterlyLabel.classList.remove('text-gray-400');
+                    quarterlyLabel.classList.add('text-white');
+                } else {
+                    monthlyLabel.classList.remove('text-gray-400');
+                    monthlyLabel.classList.add('text-white');
+                    quarterlyLabel.classList.add('text-gray-400');
+                    quarterlyLabel.classList.remove('text-white');
+                }
+
+                for (const plan in prices) {
+                    priceElements[plan].textContent = isQuarterly ? prices[plan].quarterly : prices[plan].monthly;
+                    cycleElements[plan].textContent = isQuarterly ? '/quarter' : '/mo';
+                }
+            }
+            
+            toggle.addEventListener('change', function() {
+                updatePrices(this.checked);
+            });
+            
+            // Initial state
+            updatePrices(toggle.checked);
+        });
+    </script>
+</body>
+</html>
