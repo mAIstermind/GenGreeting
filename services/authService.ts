@@ -16,11 +16,20 @@ const callApi = async (endpoint: string, payload: object) => {
         body: JSON.stringify(payload),
     });
 
-    const result = await response.json();
     if (!response.ok) {
-        throw new Error(result.error || `An unknown error occurred at ${endpoint}.`);
+        const errorText = await response.text();
+        try {
+            // It might be a JSON error object from our API (e.g., { error: "..." })
+            const errorJson = JSON.parse(errorText);
+            throw new Error(errorJson.error || `An error occurred at ${endpoint}.`);
+        } catch (e) {
+            // If parsing fails, it's a plain text/HTML error from the server (e.g., Vercel's error page)
+            throw new Error(errorText || `An unknown error occurred at ${endpoint}.`);
+        }
     }
-    return result;
+
+    // If response.ok is true, we expect valid JSON.
+    return response.json();
 };
 
 
