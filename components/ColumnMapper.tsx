@@ -6,16 +6,13 @@ import { promptTemplates, defaultPromptTemplate } from '../promptTemplates';
 
 interface ColumnMapperProps {
   headers: string[];
-  // FIX: Add 'email' to the mapping object to support email personalization.
-  onMap: (mapping: { name: string; email: string; profileImage: string }, promptTemplate: string) => void;
+  onMap: (mapping: { name: string; profileImage: string }, promptTemplate: string) => void;
   onCancel: () => void;
   fileName: string;
 }
 
 export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCancel, fileName }) => {
   const [nameColumn, setNameColumn] = useState('');
-  // FIX: Add state for the optional email column mapping.
-  const [emailColumn, setEmailColumn] = useState('');
   const [profileImageColumn, setProfileImageColumn] = useState('');
   const [templateId, setTemplateId] = useState(defaultPromptTemplate.id);
   const [promptMode, setPromptMode] = useState<'template' | 'custom'>('template');
@@ -25,13 +22,9 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
   useEffect(() => {
     // Auto-detect columns based on common names
     const nameGuess = headers.find(h => h.toLowerCase().includes('name'));
-    // FIX: Add auto-detection for the email column.
-    const emailGuess = headers.find(h => h.toLowerCase().includes('email'));
     const imageGuess = headers.find(h => h.toLowerCase().includes('image') || h.toLowerCase().includes('logo') || h.toLowerCase().includes('url') || h.toLowerCase().includes('photo'));
 
     if (nameGuess) setNameColumn(nameGuess);
-    // FIX: Set the detected email column.
-    if (emailGuess) setEmailColumn(emailGuess);
     if (imageGuess) setProfileImageColumn(imageGuess);
   }, [headers]);
 
@@ -39,24 +32,12 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
     const value = e.target.value;
     setNameColumn(value);
     if (value && value === profileImageColumn) setProfileImageColumn('');
-    // FIX: Ensure a column is not used for both name and email.
-    if (value && value === emailColumn) setEmailColumn('');
-  };
-
-  // FIX: Add handler for selecting the email column.
-  const handleEmailChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setEmailColumn(value);
-    if (value && value === nameColumn) setNameColumn('');
-    if (value && value === profileImageColumn) setProfileImageColumn('');
   };
 
   const handleProfileImageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setProfileImageColumn(value);
     if (value && value === nameColumn) setNameColumn('');
-    // FIX: Ensure a column is not used for both profile image and email.
-    if (value && value === emailColumn) setEmailColumn('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -65,12 +46,10 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
         if (promptMode === 'template') {
             const selectedTemplate = promptTemplates.find(t => t.id === templateId);
             if (selectedTemplate) {
-                 // FIX: Pass the selected email column to the onMap handler.
-                 onMap({ name: nameColumn, email: emailColumn, profileImage: profileImageColumn }, selectedTemplate.template);
+                 onMap({ name: nameColumn, profileImage: profileImageColumn }, selectedTemplate.template);
             }
         } else {
-             // FIX: Pass the selected email column to the onMap handler for custom prompts.
-             onMap({ name: nameColumn, email: emailColumn, profileImage: profileImageColumn }, customPrompt);
+             onMap({ name: nameColumn, profileImage: profileImageColumn }, customPrompt);
         }
     }
   };
@@ -108,25 +87,6 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
                     className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                 >
                     <option value="">Select a column...</option>
-                    {headers.map(header => (
-                    <option key={header} value={header}>{header}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* FIX: Add UI for mapping the optional email column from the CSV. */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <label htmlFor="email-column" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
-                    Email <span className="text-base font-normal">(Optional)</span>
-                    <span className="block text-sm text-gray-500 dark:text-gray-400">Used for some templates.</span>
-                </label>
-                <select
-                    id="email-column"
-                    value={emailColumn}
-                    onChange={handleEmailChange}
-                    className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                >
-                    <option value="">Do not map</option>
                     {headers.map(header => (
                     <option key={header} value={header}>{header}</option>
                     ))}
@@ -220,7 +180,7 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
                         Your Custom Prompt
                     </label>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-2">
-                        Use the placeholder <code className="text-xs bg-gray-600 px-1 py-0.5 rounded-md text-yellow-300">${`{firstName}`}</code> to personalize each card. Click it to insert.
+                        Use placeholders like <code className="text-xs bg-gray-600 px-1 py-0.5 rounded-md text-yellow-300">${`{firstName}`}</code> to personalize each card.
                     </p>
                     <div className="flex flex-wrap gap-2 mb-2">
                         <button type="button" onClick={() => setCustomPrompt(p => p + '${firstName}')} className="text-xs bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-2 py-1 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">${`{firstName}`}</button>
@@ -250,7 +210,7 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
           <button
             type="submit"
             disabled={!isMappingValid}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500"
           >
             <CheckIcon className="w-5 h-5" />
             Confirm & Proceed

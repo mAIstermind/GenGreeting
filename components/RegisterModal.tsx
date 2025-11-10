@@ -1,18 +1,16 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { CloseIcon } from './icons/CloseIcon';
-import type { User } from '../types';
+import type { User } from '../auth';
+import { authService } from '../services/authService';
 
 interface RegisterModalProps {
     onClose: () => void;
     onSwitchToLogin: () => void;
-    onRegisterSuccess: (couponCode: string, foreverCode: string) => void;
+    onRegisterSuccess: (user: User, couponCode: string, foreverCode: string) => void;
     couponCodeFromUrl?: string | null;
     foreverCodeFromUrl?: string | null;
 }
-
-const USERS_STORAGE_KEY = 'aigreetings_users';
 
 export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, onRegisterSuccess, couponCodeFromUrl, foreverCodeFromUrl }) => {
     const [email, setEmail] = useState('');
@@ -32,45 +30,24 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSwitchT
         }
     }, [couponCodeFromUrl, foreverCodeFromUrl]);
 
-    const handleRegister = (e: React.FormEvent) => {
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setIsLoading(true);
 
         if (password !== confirmPassword) {
             setError("Passwords do not match.");
-            setIsLoading(false);
             return;
         }
         
-        // Simulate an async API call
-        setTimeout(() => {
-            try {
-                const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-                const users: User[] = storedUsers ? JSON.parse(storedUsers) : [];
-
-                const emailExists = users.some(user => user.email.toLowerCase() === email.toLowerCase());
-
-                if (emailExists) {
-                    setError("An account with this email already exists.");
-                    setIsLoading(false);
-                    return;
-                }
-                
-                // In a real app, you would hash the password here before saving
-                const newUser: User = { email: email.toLowerCase(), password };
-                users.push(newUser);
-
-                localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-                
-                setIsLoading(false);
-                onRegisterSuccess(couponCode, foreverCode);
-
-            } catch (err) {
-                setError("An unexpected error occurred during registration.");
-                setIsLoading(false);
-            }
-        }, 750);
+        setIsLoading(true);
+        try {
+            const newUser = await authService.register(email, password);
+            onRegisterSuccess(newUser, couponCode, foreverCode);
+        } catch (err: any) {
+            setError(err.message || "An unexpected error occurred.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import JSZip from 'jszip';
@@ -27,16 +26,19 @@ import { UpgradeIcon } from './components/icons/UpgradeIcon';
 import { SunIcon } from './components/icons/SunIcon';
 import { MoonIcon } from './components/icons/MoonIcon';
 import { geminiService } from './services/geminiService';
-import type { Contact, GeneratedCard, AgencyConfig } from './types';
+import { authService } from './services/authService';
+import type { Contact, GeneratedCard, AgencyConfig, User } from './types';
 import { ImageGenerator } from './components/ImageGenerator';
 import type { BrandingConfig } from './branding';
 import { GreetingCard } from './components/GreetingCard';
 import { UserCircleIcon } from './components/icons/UserCircleIcon';
 import { Footer } from './components/Footer';
+import { TextGenerator } from './components/TextGenerator';
 
 type AppState = 'idle' | 'mapping' | 'generating' | 'done';
 type AuthModalState = 'login' | 'register' | null;
 type Theme = 'light' | 'dark';
+type BatchMode = 'csv' | 'text';
 
 interface Subscription {
   planName: string;
@@ -95,6 +97,7 @@ function App() {
   const [brandLogo, setBrandLogo] = useState<string | null>(() => localStorage.getItem('brand_logo'));
   const [isBranding, setIsBranding] = useState(false);
   const [activeTab, setActiveTab] = useState<'csv' | 'single'>('csv');
+  const [batchMode, setBatchMode] = useState<BatchMode>('csv');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   // --- Theme State ---
@@ -105,6 +108,7 @@ function App() {
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   // --- Auth State ---
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authModal, setAuthModal] = useState<AuthModalState>(null);
   const [couponCodeFromUrl, setCouponCodeFromUrl] = useState<string | null>(null);
@@ -189,30 +193,9 @@ function App() {
       return sub;
   }, []);
 
-  const handleRegisterSuccess = (couponCode?: string, foreverCode?: string) => {
-      setIsLoggedIn(true);
-      setAuthModal(null);
-
-      const isBetaTester = couponCode === BETA_TESTER_COUPON_CODE;
-      const hasForeverBonus = foreverCode === FOREVER_50_CODE;
-
-      // All new registrations start on a free trial plan
-      const newSub: Subscription = {
-          planName: 'Trial',
-          monthlyLimit: REGISTERED_TRIAL_LIMIT, // 10 generations for free trial
-          ...(isBetaTester && { bonusCredits: 1000 }),
-          ...(hasForeverBonus && { foreverBonus: 50 }),
-          cycleStartDate: Date.now(),
-          usedInCycle: 0,
-      };
-      
-      localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(newSub));
-      setSubscription(newSub);
-  };
-
-  const handleLoginSuccess = () => {
+  const initializeUserSession = useCallback((user: User) => {
+    setCurrentUser(user);
     setIsLoggedIn(true);
-    setAuthModal(null);
     const storedSub = localStorage.getItem(SUBSCRIPTION_STORAGE_KEY);
     if(storedSub) {
       try {
@@ -221,22 +204,54 @@ function App() {
         setSubscription(currentSub);
       } catch (e) {
         console.error("Failed to parse subscription data on login", e);
-        // If parsing fails, maybe create a new trial subscription
-         handleRegisterSuccess();
+        // If parsing fails, create a new trial subscription for the user
+        const newSub = createNewTrialSubscription();
+        setSubscription(newSub);
       }
     } else {
        // If no subscription exists for a logged-in user, create a new trial one.
-       handleRegisterSuccess();
+       const newSub = createNewTrialSubscription();
+       setSubscription(newSub);
     }
+  }, [checkSubscriptionCycle]);
+  
+  const createNewTrialSubscription = (couponCode?: string, foreverCode?: string): Subscription => {
+      const isBetaTester = couponCode === BETA_TESTER_COUPON_CODE;
+      const hasForeverBonus = foreverCode === FOREVER_50_CODE;
+
+      const newSub: Subscription = {
+          planName: 'Trial',
+          monthlyLimit: REGISTERED_TRIAL_LIMIT,
+          ...(isBetaTester && { bonusCredits: 1000 }),
+          ...(hasForeverBonus && { foreverBonus: 50 }),
+          cycleStartDate: Date.now(),
+          usedInCycle: 0,
+      };
+      
+      localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(newSub));
+      return newSub;
+  };
+
+
+  const handleRegisterSuccess = (user: User, couponCode?: string, foreverCode?: string) => {
+      setCurrentUser(user);
+      setIsLoggedIn(true);
+      setAuthModal(null);
+      const newSub = createNewTrialSubscription(couponCode, foreverCode);
+      setSubscription(newSub);
+  };
+
+  const handleLoginSuccess = (user: User) => {
+    setAuthModal(null);
+    initializeUserSession(user);
   };
 
 
   const handleLogout = () => {
+    authService.logout();
     setIsLoggedIn(false);
+    setCurrentUser(null);
     setSubscription(null);
-    // Note: We don't remove the subscription from localStorage on logout,
-    // so their usage data is preserved if they log back in.
-    // If you wanted to clear it: localStorage.removeItem(SUBSCRIPTION_STORAGE_KEY);
   }
 
   useEffect(() => {
@@ -268,33 +283,27 @@ function App() {
       shouldOpenRegister = true;
     }
     
-    const storedSub = localStorage.getItem(SUBSCRIPTION_STORAGE_KEY);
-    if (shouldOpenRegister && !storedSub) {
+    const user = authService.getCurrentUser();
+    
+    if (shouldOpenRegister && !user) {
         setAuthModal('register');
         window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (user) {
+        initializeUserSession(user);
     }
 
     const storedTrialCount = localStorage.getItem(TRIAL_STORAGE_KEY);
     setTrialGenerationsUsed(storedTrialCount ? parseInt(storedTrialCount, 10) : 0);
     
-    if(storedSub) {
-      try {
-        const parsedSub = JSON.parse(storedSub);
-        const currentSub = checkSubscriptionCycle(parsedSub);
-        setSubscription(currentSub);
-        setIsLoggedIn(true);
-      } catch (e) {
-        console.error("Failed to parse subscription data", e);
-        localStorage.removeItem(SUBSCRIPTION_STORAGE_KEY);
-      }
-    }
 
     return () => {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
         window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
-  }, [checkSubscriptionCycle]);
+  }, [initializeUserSession]);
 
   const handleInstallPrompt = () => {
     if (installPromptEvent) {
@@ -353,51 +362,9 @@ function App() {
     });
   };
 
-  const handleMap = (mapping: { name: string; email: string; profileImage: string }, promptTemplate: string) => {
-    if (!csvFile) return;
-
-    setError(null);
-    setAppState('generating');
-    setProgress(0);
-    setGeneratedCards([]);
-    setPreviewCard(null);
-    
-    Papa.parse(csvFile, {
-      header: true,
-      skipEmptyLines: true,
-      complete: async (results: any) => {
-        let parsedContacts: Contact[] = results.data.map((row: any) => ({
-          name: row[mapping.name] || '',
-          email: row[mapping.email] || '',
-          profileImageUrl: mapping.profileImage ? row[mapping.profileImage] || '' : '',
-        })).filter((c: Contact) => c.name);
-        
-        if (isLoggedIn && subscription) {
-            const totalCredits = subscription.monthlyLimit + (subscription.bonusCredits || 0) + (subscription.foreverBonus || 0);
-            const remaining = totalCredits - subscription.usedInCycle;
-            if (parsedContacts.length > remaining) {
-                setError(
-                    <span>
-                        Your current plan has {remaining} generations left this cycle, but your spreadsheet has {parsedContacts.length} contacts.
-                        <a href="https://maistermind.com/gengreeting-pricing" target="_blank" rel="noopener noreferrer" className="font-bold text-blue-400 hover:underline ml-2">
-                            Please upgrade your plan
-                        </a>
-                        &nbsp;or upload a smaller file.
-                    </span>
-                );
-                setAppState('idle');
-                return;
-            }
-        } else {
-            setError("An error occurred. Please log in to perform batch generation.");
-            setAppState('idle');
-            return;
-        }
-
-        setContacts(parsedContacts);
-
-        if (parsedContacts.length === 0) {
-          setError("No valid contacts found in the CSV file.");
+  const runGenerationProcess = async (contactsToProcess: Contact[], promptTemplate: string) => {
+        if (contactsToProcess.length === 0) {
+          setError("No valid contacts found to generate cards for.");
           setAppState('idle');
           return;
         }
@@ -405,16 +372,15 @@ function App() {
         const newCards: GeneratedCard[] = [];
         const generationErrors: string[] = [];
 
-        for (let i = 0; i < parsedContacts.length; i++) {
-          const contact = parsedContacts[i];
+        for (let i = 0; i < contactsToProcess.length; i++) {
+          const contact = contactsToProcess[i];
           try {
             const firstName = contact.name.split(' ')[0];
             const firstInitial = firstName.charAt(0).toUpperCase();
 
             const imagePrompt = promptTemplate
                 .replace(/\${firstName}/g, firstName)
-                .replace(/\${firstInitial}/g, firstInitial)
-                .replace(/\${email}/g, contact.email || '');
+                .replace(/\${firstInitial}/g, firstInitial);
 
             let imageUrl;
             if (contact.profileImageUrl) {
@@ -442,7 +408,7 @@ function App() {
             console.error(`Error for ${contact.name}:`, err);
             generationErrors.push(`- ${contact.name}: ${err.message}`);
           } finally {
-             setProgress(((i + 1) / parsedContacts.length) * 100);
+             setProgress(((i + 1) / contactsToProcess.length) * 100);
           }
         }
         
@@ -458,12 +424,87 @@ function App() {
         }
 
         setAppState('done');
+  };
+
+  const handleMap = (mapping: { name: string; profileImage: string }, promptTemplate: string) => {
+    if (!csvFile) return;
+
+    setError(null);
+    setAppState('generating');
+    setProgress(0);
+    setGeneratedCards([]);
+    setPreviewCard(null);
+    
+    Papa.parse(csvFile, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results: any) => {
+        let parsedContacts: Contact[] = results.data.map((row: any) => ({
+          name: row[mapping.name] || '',
+          profileImageUrl: mapping.profileImage ? row[mapping.profileImage] || '' : '',
+        })).filter((c: Contact) => c.name);
+        
+        if (isLoggedIn && subscription) {
+            const totalCredits = subscription.monthlyLimit + (subscription.bonusCredits || 0) + (subscription.foreverBonus || 0);
+            const remaining = totalCredits - subscription.usedInCycle;
+            if (parsedContacts.length > remaining) {
+                setError(
+                    <span>
+                        Your current plan has {remaining} generations left this cycle, but your spreadsheet has {parsedContacts.length} contacts.
+                        <a href="https://maistermind.com/gengreeting-pricing" target="_blank" rel="noopener noreferrer" className="font-bold text-blue-400 hover:underline ml-2">
+                            Please upgrade your plan
+                        </a>
+                        &nbsp;or upload a smaller file.
+                    </span>
+                );
+                setAppState('idle');
+                return;
+            }
+        } else {
+            setError("An error occurred. Please log in to perform batch generation.");
+            setAppState('idle');
+            return;
+        }
+
+        setContacts(parsedContacts);
+        runGenerationProcess(parsedContacts, promptTemplate);
       },
       error: (err: Error) => {
         setError(`Error processing CSV file: ${err.message}`);
         setAppState('idle');
       }
     });
+  };
+
+  const handleTextGenerate = (contactsToProcess: Contact[], promptTemplate: string) => {
+      setError(null);
+      
+      if (isLoggedIn && subscription) {
+          const totalCredits = subscription.monthlyLimit + (subscription.bonusCredits || 0) + (subscription.foreverBonus || 0);
+          const remaining = totalCredits - subscription.usedInCycle;
+          if (contactsToProcess.length > remaining) {
+              setError(
+                  <span>
+                      Your current plan has {remaining} generations left this cycle, but you entered {contactsToProcess.length} names.
+                      <a href="https://maistermind.com/gengreeting-pricing" target="_blank" rel="noopener noreferrer" className="font-bold text-blue-400 hover:underline ml-2">
+                          Please upgrade your plan
+                      </a>
+                      &nbsp;or enter fewer names.
+                  </span>
+              );
+              return;
+          }
+      } else {
+          setError("An error occurred. Please log in to perform batch generation.");
+          return;
+      }
+      
+      setAppState('generating');
+      setProgress(0);
+      setGeneratedCards([]);
+      setPreviewCard(null);
+      setContacts(contactsToProcess);
+      runGenerationProcess(contactsToProcess, promptTemplate);
   };
 
     const handleTrialGeneration = () => {
@@ -562,7 +603,7 @@ function App() {
             <div className="flex justify-center border-b border-gray-200 dark:border-gray-700">
                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     <button onClick={() => setActiveTab('csv')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base sm:text-lg ${activeTab === 'csv' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                        Batch Generate via CSV
+                        Batch Generate
                     </button>
                     <button onClick={() => setActiveTab('single')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base sm:text-lg ${activeTab === 'single' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
                         Generate a Single Image
@@ -571,7 +612,26 @@ function App() {
             </div>
             {activeTab === 'csv' ? (
               isLoggedIn ? (
-                <FileUpload onFileSelect={handleFileSelect} disabled={appState !== 'idle'} />
+                 <div>
+                    <div className="flex justify-center border-b border-gray-700/60 mb-8">
+                        <nav className="-mb-px flex space-x-6" aria-label="Batch Mode">
+                            <button onClick={() => setBatchMode('csv')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-base ${batchMode === 'csv' ? 'border-gray-300 text-gray-100' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
+                                From CSV
+                            </button>
+                             <button onClick={() => setBatchMode('text')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-base ${batchMode === 'text' ? 'border-gray-300 text-gray-100' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
+                                From Text
+                            </button>
+                        </nav>
+                    </div>
+                    {batchMode === 'csv' && <FileUpload onFileSelect={handleFileSelect} disabled={appState !== 'idle'} />}
+                    {batchMode === 'text' && (
+                        <TextGenerator 
+                            onGenerate={handleTextGenerate}
+                            isOnline={isOnline}
+                            remainingCredits={remainingGenerations}
+                        />
+                    )}
+                 </div>
               ) : (
                 <TrialGenerator
                     geminiService={geminiService}

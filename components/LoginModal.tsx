@@ -1,17 +1,15 @@
 
-
 import React, { useState } from 'react';
 import { CloseIcon } from './icons/CloseIcon';
 import { LoginIcon } from './icons/LoginIcon';
-import type { User } from '../types';
+import type { User } from '../auth';
+import { authService } from '../services/authService';
 
 interface LoginModalProps {
     onClose: () => void;
     onSwitchToRegister: () => void;
-    onLoginSuccess: () => void;
+    onLoginSuccess: (user: User) => void;
 }
-
-const USERS_STORAGE_KEY = 'aigreetings_users';
 
 export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSwitchToRegister, onLoginSuccess }) => {
     const [email, setEmail] = useState('');
@@ -19,33 +17,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSwitchToRegis
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
         
-        // Simulate an async API call
-        setTimeout(() => {
-            try {
-                const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-                const users: User[] = storedUsers ? JSON.parse(storedUsers) : [];
-                
-                const foundUser = users.find(user => user.email.toLowerCase() === email.toLowerCase());
-                
-                // In a real app, you would compare hashed passwords securely on a server
-                if (foundUser && foundUser.password === password) {
-                    setIsLoading(false);
-                    onLoginSuccess();
-                } else {
-                    setError("Invalid email or password. Please try again.");
-                    setIsLoading(false);
-                }
-
-            } catch (err) {
-                setError("An unexpected error occurred during login.");
-                setIsLoading(false);
-            }
-        }, 500);
+        try {
+            const user = await authService.login(email, password);
+            onLoginSuccess(user);
+        } catch (err: any) {
+            setError(err.message || "An unexpected error occurred.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

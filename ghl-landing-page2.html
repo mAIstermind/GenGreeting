@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- WHITELABEL: Title can be dynamic, e.g., {{ agency.name }} - AI-Powered Greeting Cards -->
+    <title>AI Greetings - AI-Powered Greeting Cards That Get Attention</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+        .gradient-bg { background-color: #0B1120; background-image: radial-gradient(at 10% 20%, hsla(217, 78%, 20%, 1) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(269, 78%, 25%, 1) 0px, transparent 50%), radial-gradient(at 80% 90%, hsla(300, 78%, 25%, 1) 0px, transparent 50%); }
+        .feature-card { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Header -->
+    <header class="py-5 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-tighter">
+                <!-- WHITELABEL: App name can be dynamic, e.g., {{ agency.appName | default: 'AI Greetings' }} -->
+                <span class="text-blue-400">AI</span>Greetings
+            </h1>
+            <!-- NOTE FOR GHL USER: Replace '#' with your GHL Form/Popup link -->
+            <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                Start Free Trial
+            </a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="gradient-bg">
+        <section class="text-center py-20 px-6">
+            <div class="container mx-auto">
+                <h2 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">Stop Being Ignored.</h2>
+                <h3 class="text-4xl md:text-6xl font-extrabold mb-6 text-blue-400">Get Their Attention.</h3>
+                <p class="max-w-3xl mx-auto text-lg text-gray-300 mb-8">
+                    Generate hundreds of hyper-personalized, AI-powered greeting cards in seconds. Upload your contact list and create stunning, unique visuals that cut through the noise and make an impact.
+                </p>
+                <!-- NOTE FOR GHL USER: Replace '#' with your GHL Form/Popup link -->
+                <a href="#" class="bg-white text-gray-900 font-bold py-4 px-8 rounded-lg text-lg hover:bg-gray-200 transition-transform transform hover:scale-105 inline-block">
+                    Generate 10 Cards For Free
+                </a>
+                <p class="text-gray-400 text-sm mt-3">No credit card required.</p>
+            </div>
+        </section>
+
+        <!-- Image Showcase -->
+        <section class="py-12 px-6">
+            <div class="container mx-auto">
+                 <div class="rounded-xl shadow-2xl overflow-hidden p-2 bg-black/20 border border-gray-700 max-w-5xl mx-auto">
+                    <!-- Replace with an actual screenshot or video of your app -->
+                    <img src="https://storage.googleapis.com/aistudio-hosting/generative-ai-studio/assets/apps/gengreeting-demo.png" alt="Screenshot of the AI Greetings application showing a grid of generated cards" class="rounded-lg">
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="py-20 px-6">
+            <div class="container mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-12">Three Simple Steps to Stand Out</h2>
+                <div class="grid md:grid-cols-3 gap-12">
+                    <div class="text-center">
+                        <div class="w-20 h-20 mx-auto mb-4 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-3xl font-bold border-2 border-blue-500">1</div>
+                        <h3 class="text-xl font-bold mb-2">Upload Your CSV</h3>
+                        <p class="text-gray-400">Easily upload your contact list with names. We'll handle the rest.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-20 h-20 mx-auto mb-4 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-3xl font-bold border-2 border-blue-500">2</div>
+                        <h3 class="text-xl font-bold mb-2">AI Creates Magic</h3>
+                        <p class="text-gray-400">Our AI generates a unique, attention-grabbing greeting card for every single contact.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-20 h-20 mx-auto mb-4 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-3xl font-bold border-2 border-blue-500">3</div>
+                        <h3 class="text-xl font-bold mb-2">Download & Send</h3>
+                        <p class="text-gray-400">Download all your cards in a single ZIP file, ready to be emailed or shared.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+         <!-- Features Section -->
+        <section class="py-20 px-6">
+            <div class="container mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold">The Perfect Tool For...</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div class="feature-card bg-gray-800/50 p-8 rounded-xl border border-gray-700">
+                        <h3 class="text-2xl font-bold mb-4 text-blue-400">Sales Outreach</h3>
+                        <p class="text-gray-300">Break through the inbox clutter with a personalized visual that makes prospects stop and look.</p>
+                    </div>
+                    <div class="feature-card bg-gray-800/50 p-8 rounded-xl border border-gray-700">
+                        <h3 class="text-2xl font-bold mb-4 text-blue-400">Event Invitations</h3>
+                        <p class="text-gray-300">Generate unique, themed invites for webinars, parties, or corporate events that feel special.</p>
+                    </div>
+                    <div class="feature-card bg-gray-800/50 p-8 rounded-xl border border-gray-700">
+                        <h3 class="text-2xl font-bold mb-4 text-blue-400">Holiday Greetings</h3>
+                        <p class="text-gray-300">Send personalized holiday cards to your entire client list in minutes, not days.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="text-center py-20 px-6">
+            <h2 class="text-4xl font-bold mb-6">Ready to Get Their Attention?</h2>
+            <p class="max-w-2xl mx-auto text-lg text-gray-300 mb-8">
+                Sign up now and generate your first 10 cards completely free. See the difference a personalized touch can make.
+            </p>
+            <!-- NOTE FOR GHL USER: Replace '#' with your GHL Form/Popup link -->
+            <a href="#" class="bg-white text-gray-900 font-bold py-4 px-8 rounded-lg text-lg hover:bg-gray-200 transition-transform transform hover:scale-105 inline-block">
+                Start My Free Trial
+            </a>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-center py-6">
+        <!-- WHITELABEL: Copyright can be dynamic, e.g., &copy; 2025 {{ agency.name }}. All Rights Reserved. -->
+        <p class="text-gray-500">&copy; 2025 AI Greetings. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>
