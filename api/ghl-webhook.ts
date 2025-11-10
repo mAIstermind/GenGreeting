@@ -90,8 +90,8 @@ export default async function handler(req: any, res: any) {
         const updatePayload = {
             tags: Array.from(existingTags),
             customFields: [
-                { id: GHL_QUOTA_FIELD_ID, field_value: lifetimeBonusQuota },
-                { id: GHL_PLAN_FIELD_ID, field_value: 'Paid Plan + Lifetime Bonus' }
+                { id: GHL_QUOTA_FIELD_ID, value: lifetimeBonusQuota },
+                { id: GHL_PLAN_FIELD_ID, value: 'Paid Plan + Lifetime Bonus' }
             ]
         };
 

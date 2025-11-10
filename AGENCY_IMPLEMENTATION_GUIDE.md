@@ -39,7 +39,6 @@ Your application will not work until you configure its security keys and API key
 | `GHL_QUOTA_FIELD_ID`    | The ID of the GHL custom field for the user's monthly generation limit.                                 | `a1b...`                              |
 | `GHL_USED_FIELD_ID`     | The ID of the GHL custom field for tracking a user's used credits in a cycle.                           | `c2d...`                              |
 | `GHL_PLAN_FIELD_ID`     | The ID of the GHL custom field for storing the user's current subscription plan name.                   | `e3f...`                              |
-| `JWT_SECRET`            | A long, random, secret string used to sign user session tokens. Use a password generator to create this. | `a_very_long_random_secure_string_!@#` |
 
 
 ## 3. Connecting a Custom Domain (Recommended)
@@ -91,7 +90,7 @@ This application uses GHL as its user database. When a user registers, a new Con
 1.  Go back to your hosting provider (Vercel/Netlify).
 2.  Set the `GHL_PASSWORD_FIELD_ID` environment variable to the **Key** you just copied from GHL.
 3.  Repeat this for `GHL_QUOTA_FIELD_ID`, `GHL_USED_FIELD_ID`, and `GHL_PLAN_FIELD_ID` with their respective keys.
-4.  Ensure your `GHL_API_KEY` and `JWT_SECRET` are also set correctly as described in Section 2.
+4.  Ensure your `GHL_API_KEY` is also set correctly as described in Section 2.
 
 Your authentication system is now fully configured.
 

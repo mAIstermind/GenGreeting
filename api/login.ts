@@ -27,8 +27,8 @@ function getCustomFieldValue(customFields: any[], fieldId: string | undefined): 
         return undefined;
     }
     const field = customFields.find((f: any) => f.id === fieldId);
-    // GHL API returns the value in 'field_value' property
-    return field?.field_value;
+    // The GHL API (v2021-07-28) returns the custom field data in the 'value' property.
+    return field?.value;
 }
 
 export default async function handler(req: any, res: any) {

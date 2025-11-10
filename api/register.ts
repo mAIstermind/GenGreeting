@@ -66,10 +66,10 @@ export default async function handler(req: any, res: any) {
             lastName: lastName || '',
             tags: ['pwa-free-trial'], // Add the standard tag for all new signups
             customFields: [
-                { id: GHL_PASSWORD_FIELD_ID, field_value: hashedPassword },
-                { id: GHL_QUOTA_FIELD_ID, field_value: initialQuota },
-                { id: GHL_USED_FIELD_ID, field_value: 0 },
-                { id: GHL_PLAN_FIELD_ID, field_value: initialPlan }
+                { id: GHL_PASSWORD_FIELD_ID, value: hashedPassword },
+                { id: GHL_QUOTA_FIELD_ID, value: initialQuota },
+                { id: GHL_USED_FIELD_ID, value: 0 },
+                { id: GHL_PLAN_FIELD_ID, value: initialPlan }
             ]
         };
 

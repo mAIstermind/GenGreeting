@@ -1,25 +1,20 @@
 // /api/generate.ts
 import { Buffer } from "buffer";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
 
 // --- START: CONFIGURATION ---
 
-// Initialize Gemini SDK
-// This key is expected to be set in your Vercel/Netlify environment variables.
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
-    // This will cause the function to fail on startup if the key is missing.
     throw new Error("GEMINI_API_KEY environment variable is not set.");
 }
 const ai = new GoogleGenAI({ apiKey });
 
-// GoHighLevel (GHL) API Configuration
 const GHL_API_KEY = process.env.GHL_API_KEY;
 const GHL_API_URL = 'https://services.leadconnectorhq.com/contacts/';
 
-// IMPORTANT: Replace these with your actual Custom Field IDs from your GHL account.
-const GHL_CREDITS_USED_FIELD_ID = 'YOUR_GHL_CREDITS_USED_FIELD_ID'; 
-const GHL_MONTHLY_QUOTA_FIELD_ID = 'YOUR_GHL_MONTHLY_QUOTA_FIELD_ID';
+const GHL_USED_FIELD_ID = process.env.GHL_USED_FIELD_ID;
+const GHL_QUOTA_FIELD_ID = process.env.GHL_QUOTA_FIELD_ID;
 
 // --- END: CONFIGURATION ---
 
@@ -28,11 +23,12 @@ export default async function handler(req: any, res: any) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    if (!GHL_API_KEY) {
+    if (!GHL_API_KEY || !GHL_USED_FIELD_ID || !GHL_QUOTA_FIELD_ID) {
+        console.error("Server configuration error: GHL API Key or Custom Field IDs are missing.");
         return res.status(500).json({ error: 'GHL service is not configured on the server.' });
     }
 
-    const { contactId, prompt } = req.body; 
+    const { contactId, prompt } = req.body;
 
     if (!contactId || !prompt) {
         return res.status(400).json({ error: 'Missing contactId or prompt in the request body.' });
@@ -55,11 +51,11 @@ export default async function handler(req: any, res: any) {
         const ghlResponse = await fetchContactResponse.json();
         const customFields = ghlResponse.contact?.customFields || [];
         
-        const usedField = customFields.find((f: any) => f.id === GHL_CREDITS_USED_FIELD_ID);
-        const quotaField = customFields.find((f: any) => f.id === GHL_MONTHLY_QUOTA_FIELD_ID);
+        const usedField = customFields.find((f: any) => f.id === GHL_USED_FIELD_ID);
+        const quotaField = customFields.find((f: any) => f.id === GHL_QUOTA_FIELD_ID);
         
-        const usedCredits = Number(usedField?.field_value) || 0;
-        const monthlyQuota = Number(quotaField?.field_value) || 0;
+        const usedCredits = Number(usedField?.value) || 0;
+        const monthlyQuota = Number(quotaField?.value) || 0;
 
         if (usedCredits >= monthlyQuota) {
             return res.status(403).json({ error: 'Your monthly credit quota has been exceeded. Please upgrade your plan.' });
@@ -71,8 +67,7 @@ export default async function handler(req: any, res: any) {
             method: 'PUT',
             headers: ghlHeaders,
             body: JSON.stringify({
-                // The correct payload structure for updating GHL custom fields
-                customFields: [{ id: GHL_CREDITS_USED_FIELD_ID, field_value: newUsedCount }]
+                customFields: [{ id: GHL_USED_FIELD_ID, value: newUsedCount }]
             })
         });
 
@@ -83,16 +78,24 @@ export default async function handler(req: any, res: any) {
         }
         
         // --- Step 3: Call the Gemini API to generate the image ---
-        // NOTE: This part is a placeholder. You need to replace this with the
-        // actual model and parameters you intend to use, similar to the logic in `api/gemini.ts`.
-        // For example:
-        // const geminiResponse = await ai.models.generateContent({ model: 'gemini-pro', contents: prompt });
-        // const resultText = geminiResponse.text;
-        const mockGeminiResponse = { data: "mock_image_data_from_gemini_api" }; // Placeholder response
+        const geminiResponse = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: { parts: [{ text: prompt }] },
+            config: { responseModalities: [Modality.IMAGE] },
+        });
         
+        let imageUrlResult;
+        if (geminiResponse.candidates && geminiResponse.candidates.length > 0) {
+            const imagePart = geminiResponse.candidates[0].content?.parts?.find(p => p.inlineData);
+            if (imagePart?.inlineData) {
+                imageUrlResult = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+            }
+        }
+        if (!imageUrlResult) throw new Error("No image data found in Gemini API response.");
+
         // --- Step 4: Return the result to the client ---
         return res.status(200).json({ 
-            generatedImage: mockGeminiResponse.data, 
+            generatedImage: imageUrlResult, 
             remainingCredits: monthlyQuota - newUsedCount 
         });
 
