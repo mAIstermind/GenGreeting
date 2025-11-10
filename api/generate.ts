@@ -1,5 +1,4 @@
 // /api/generate.ts
-import { Buffer } from "buffer";
 import { GoogleGenAI, Modality } from "@google/genai";
 
 // --- START: CONFIGURATION ---
@@ -67,7 +66,7 @@ export default async function handler(req: any, res: any) {
             method: 'PUT',
             headers: ghlHeaders,
             body: JSON.stringify({
-                customFields: [{ id: GHL_USED_FIELD_ID, value: newUsedCount }]
+                customFields: [{ id: GHL_USED_FIELD_ID, field_value: newUsedCount }]
             })
         });
 

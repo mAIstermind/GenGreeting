@@ -1,8 +1,6 @@
 // FIX: Import 'Buffer' to make it available in the serverless function scope.
 import { Buffer } from "buffer";
 import { GoogleGenAI, Modality, Part } from "@google/genai";
-import { scrypt, randomBytes, timingSafeEqual, createHmac } from "crypto";
-import { promisify } from "util";
 
 // This file is a Vercel serverless function.
 // It acts as a secure proxy to the Google Gemini API.
