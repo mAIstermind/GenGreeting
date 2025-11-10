@@ -5,84 +5,74 @@ const JWT_SESSION_KEY = 'aigreetings_jwt';
 
 /**
  * A generic helper to call our backend API.
+ * This is now more specific for each auth action.
  */
-const callAuthApi = async (action: string, payload: object) => {
-    const response = await fetch('/api/gemini', {
+const callApi = async (endpoint: string, payload: object) => {
+    const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ action, ...payload }),
+        body: JSON.stringify(payload),
     });
 
     const result = await response.json();
     if (!response.ok) {
-        throw new Error(result.error || 'An unknown authentication error occurred.');
+        throw new Error(result.error || `An unknown error occurred at ${endpoint}.`);
     }
     return result;
 };
 
 
 const login = async (email: string, password: string): Promise<User> => {
-    const { user, token } = await callAuthApi('login', { email, password });
-    if (!user || !token) {
+    // Calls the new, dedicated /api/login endpoint
+    const { user, token } = await callApi('/api/login', { email, password });
+    if (!user) { // Token is handled server-side now, but we can check for user object
         throw new Error('Login failed. Please try again.');
     }
-    sessionStorage.setItem(JWT_SESSION_KEY, token);
+    // For client-side session, we'll store the returned user data
+    // Assuming the API now returns user data directly upon successful login
+    sessionStorage.setItem('aigreetings_user', JSON.stringify(user));
     return user;
 };
 
 const register = async (email: string, password: string): Promise<User> => {
-    const { user, token } = await callAuthApi('register', { email, password });
-     if (!user || !token) {
+    // Calls the new, dedicated /api/register endpoint
+    const { user, token } = await callApi('/api/register', { email, password });
+     if (!user) {
         throw new Error('Registration failed. Please try again.');
     }
-    sessionStorage.setItem(JWT_SESSION_KEY, token);
+    // Store user data on successful registration
+    sessionStorage.setItem('aigreetings_user', JSON.stringify(user));
     return user;
 };
 
 const logout = () => {
-    sessionStorage.removeItem(JWT_SESSION_KEY);
+    // Changed from JWT to a simpler user object storage
+    sessionStorage.removeItem('aigreetings_user');
 };
 
-/**
- * Decodes a Base64URL string.
- */
-function base64urlDecode(str: string): string {
-    str = str.replace(/-/g, '+').replace(/_/g, '/');
-    while (str.length % 4) {
-      str += '=';
-    }
-    return Buffer.from(str, 'base64').toString('utf-8');
-}
 
 /**
- * Gets the current user by decoding the JWT from session storage.
- * This does not verify the token's signature (that's the server's job),
- * but it safely extracts user data for UI purposes and checks for expiry.
+ * Gets the current user from session storage.
+ * This is now simpler as it just parses a stored user object.
  */
 const getCurrentUser = (): User | null => {
-    const token = sessionStorage.getItem(JWT_SESSION_KEY);
-    if (!token) {
+    const userStr = sessionStorage.getItem('aigreetings_user');
+    if (!userStr) {
         return null;
     }
 
     try {
-        const parts = token.split('.');
-        if (parts.length !== 3) return null; // Invalid token format
-
-        const payload = JSON.parse(base64urlDecode(parts[1]));
-
-        // Check for token expiration
-        if (payload.exp && payload.exp * 1000 < Date.now()) {
-            logout(); // Clean up expired token
-            return null;
+        const user = JSON.parse(userStr);
+        // Basic validation to ensure it's a user object
+        if (user && user.email) {
+            return user;
         }
-
-        return { email: payload.email };
+        return null;
     } catch (e) {
-        console.error("Failed to decode JWT:", e);
-        return null; // Token is malformed or invalid
+        console.error("Failed to parse user from session storage:", e);
+        return null;
     }
 };
 

@@ -32,9 +32,9 @@ Once you register and log in, you unlock the full power of the app.
 This is the perfect tool for creating personalized cards for your entire contact list at once.
 
 **Step 1: Prepare Your CSV File**
-Create a CSV file with at least one column: `name`. You can also include other optional columns.
+Your CSV file must contain a column for names. Other columns, such as 'email', will be ignored by the application.
 
-*   **Required Column:** A column with the header `name` (or similar, you will map this in the app).
+*   **Required Name Column:** A column with a header like `name` or `Full Name`. You will select this column in the next step.
 *   **Optional Image Column:** A column with a header like `profileImageUrl` containing a full, publicly accessible URL to a JPG, PNG, or WEBP image. The AI will cleverly incorporate this image into the final design.
 
 **Image URL Guidelines (Important):**

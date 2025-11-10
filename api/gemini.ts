@@ -5,73 +5,10 @@ import { scrypt, randomBytes, timingSafeEqual, createHmac } from "crypto";
 import { promisify } from "util";
 
 // This file is a Vercel serverless function.
-// It acts as a secure proxy to the Google Gemini API and handles user authentication via the GHL API.
+// It acts as a secure proxy to the Google Gemini API.
+// User authentication is now handled by dedicated /api/login.ts and /api/register.ts endpoints.
 
 // --- START: UTILITIES ---
-
-const scryptAsync = promisify(scrypt);
-
-/**
- * Hashes a password with a random salt using scrypt.
- * @param password The plaintext password.
- * @returns A promise that resolves to the "salt:hash" string.
- */
-async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16).toString('hex');
-  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${salt}:${derivedKey.toString('hex')}`;
-}
-
-/**
- * Verifies a plaintext password against a scrypt hash.
- * @param password The plaintext password to check.
- * @param hash The "salt:hash" string from the database.
- * @returns A promise that resolves to true if the password is correct, false otherwise.
- */
-async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  const [salt, key] = hash.split(':');
-  if (!salt || !key) return false;
-  const keyBuffer = Buffer.from(key, 'hex');
-  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
-  // Use timingSafeEqual to prevent timing attacks
-  return timingSafeEqual(keyBuffer, derivedKey);
-}
-
-const JWT_SECRET = process.env.JWT_SECRET;
-
-/**
- * Encodes a string in Base64URL format.
- */
-function base64urlEncode(str: string) {
-    return Buffer.from(str).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-}
-
-/**
- * Creates a secure JSON Web Token (JWT).
- * @param payload The data to include in the token (e.g., user email).
- * @returns The signed JWT string.
- */
-function createToken(payload: { email: string }): string {
-    if (!JWT_SECRET) {
-        // This should not happen in production if environment is configured correctly.
-        throw new Error("JWT_SECRET is not configured.");
-    }
-    const header = { alg: 'HS256', typ: 'JWT' };
-    const extendedPayload = {
-        ...payload,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7) // 7-day expiry
-    };
-    const encodedHeader = base64urlEncode(JSON.stringify(header));
-    const encodedPayload = base64urlEncode(JSON.stringify(extendedPayload));
-    const signatureInput = `${encodedHeader}.${encodedPayload}`;
-    const signature = createHmac('sha256', JWT_SECRET)
-        .update(signatureInput)
-        .digest('base64')
-        .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-        
-    return `${signatureInput}.${signature}`;
-}
 
 /**
  * A basic security measure to mitigate Server-Side Request Forgery (SSRF).
@@ -119,103 +56,6 @@ export default async function handler(req: any, res: any) {
     }
     
     const { action, ...payload } = req.body;
-
-    // --- START: AUTHENTICATION ACTIONS ---
-    if (action === 'register' || action === 'login') {
-        const GHL_API_KEY = process.env.GHL_API_KEY;
-        const GHL_PASSWORD_FIELD_ID = process.env.GHL_PASSWORD_FIELD_ID;
-        
-        if (!GHL_API_KEY || !GHL_PASSWORD_FIELD_ID || !JWT_SECRET) {
-            return res.status(500).json({ error: 'Authentication service is not configured on the server.' });
-        }
-        
-        const ghlApi = {
-            baseUrl: 'https://services.leadconnectorhq.com/contacts',
-            headers: {
-                'Authorization': `Bearer ${GHL_API_KEY}`,
-                'Content-Type': 'application/json',
-                'Version': '2021-07-28'
-            }
-        };
-
-        const { email, password } = payload;
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required.' });
-        }
-
-        try {
-            if (action === 'register') {
-                // 1. Check if contact already exists
-                const searchRes = await fetch(`${ghlApi.baseUrl}/lookup?email=${encodeURIComponent(email)}`, { headers: ghlApi.headers });
-                if (searchRes.ok) {
-                    const existingContacts = await searchRes.json();
-                    if (existingContacts.contacts && existingContacts.contacts.length > 0) {
-                        return res.status(409).json({ error: 'An account with this email already exists.' });
-                    }
-                }
-                
-                // 2. Hash password
-                const hashedPassword = await hashPassword(password);
-
-                // 3. Create contact in GHL
-                const createRes = await fetch(ghlApi.baseUrl, {
-                    method: 'POST',
-                    headers: ghlApi.headers,
-                    body: JSON.stringify({
-                        email: email.toLowerCase(),
-                        customFields: [
-                            { id: GHL_PASSWORD_FIELD_ID, field_value: hashedPassword }
-                        ]
-                    })
-                });
-
-                if (!createRes.ok) {
-                    const errorBody = await createRes.text();
-                    console.error("GHL Create Error:", errorBody);
-                    throw new Error('Failed to create account in CRM.');
-                }
-                
-                const ghlContact = await createRes.json();
-                const user = { email: ghlContact.contact.email };
-                const token = createToken(user);
-                return res.status(201).json({ user, token });
-            }
-
-            if (action === 'login') {
-                // 1. Find contact by email
-                const searchRes = await fetch(`${ghlApi.baseUrl}/lookup?email=${encodeURIComponent(email)}`, { headers: ghlApi.headers });
-                if (!searchRes.ok) throw new Error(); // Triggers generic error below
-                const existingContacts = await searchRes.json();
-                const ghlContact = existingContacts.contacts?.[0];
-
-                if (!ghlContact) {
-                    return res.status(401).json({ error: 'Invalid email or password.' });
-                }
-
-                // 2. Find the stored password hash
-                const passwordField = ghlContact.customFields?.find((field: any) => field.id === GHL_PASSWORD_FIELD_ID);
-                const storedHash = passwordField?.field_value;
-
-                if (!storedHash) {
-                    return res.status(401).json({ error: 'Invalid email or password.' });
-                }
-
-                // 3. Verify password
-                const isValid = await verifyPassword(password, storedHash);
-                if (!isValid) {
-                    return res.status(401).json({ error: 'Invalid email or password.' });
-                }
-
-                const user = { email: ghlContact.email };
-                const token = createToken(user);
-                return res.status(200).json({ user, token });
-            }
-        } catch (error: any) {
-            console.error(`Auth action '${action}' failed:`, error);
-            return res.status(500).json({ error: 'An internal server error occurred during authentication.' });
-        }
-    }
-    // --- END: AUTHENTICATION ACTIONS ---
     
     // --- START: GEMINI ACTIONS ---
     // Prioritize client-provided API key (for whitelabel agencies) over the default system key.

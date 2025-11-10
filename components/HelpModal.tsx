@@ -30,7 +30,7 @@ const UserGuide = () => (
         <H3>2. Generating Cards in Bulk (via CSV)</H3>
         <P>This is the perfect tool for creating personalized cards for your entire contact list at once.</P>
         <UL>
-            <LI><Strong>Step 1: Prepare Your CSV File.</Strong> Create a CSV with at least a <Code>name</Code> column. Optionally, add a second column with a public URL to a logo or profile picture for each person.</LI>
+            <LI><Strong>Step 1: Prepare Your CSV File.</Strong> Create a CSV with at least a <Code>name</Code> column. Other columns (like 'email') will be ignored. Optionally, you can add a column with a public URL to a logo or profile picture.</LI>
             <LI><Strong>Step 2: Upload Your File.</Strong> On the "Batch Generate via CSV" tab, click or drag-and-drop your prepared CSV file into the upload area.</LI>
             <LI><Strong>Step 3: Map Your Columns.</Strong> Tell the app which column contains names (required). You can also map your optional column containing image URLs.</LI>
             <LI><Strong>Image URL Guidelines:</Strong> The URL must be a direct link to a JPG or PNG image, under 4MB, and publicly accessible. Use square images for best results.</LI>
