@@ -44,8 +44,9 @@ export default async function handler(req: any, res: any) {
     try {
         step = 'VALIDATE_CONFIG_AND_BODY';
         // Validate server configuration
-        if (!GHL_API_KEY || !GHL_PASSWORD_FIELD_ID) {
-            console.error("Server configuration error: GHL_API_KEY or GHL_PASSWORD_FIELD_ID is missing.");
+        // FIX: Expanded the environment variable check to include all required GHL custom field IDs for this function. This ensures a more robust and informative error if the server is misconfigured.
+        if (!GHL_API_KEY || !GHL_PASSWORD_FIELD_ID || !GHL_QUOTA_FIELD_ID || !GHL_USED_FIELD_ID || !GHL_PLAN_FIELD_ID) {
+            console.error("Server configuration error: One or more GHL environment variables (API key or custom field IDs) are missing.");
             return res.status(500).json({ error: 'Authentication service is not configured correctly on the server.' });
         }
 
