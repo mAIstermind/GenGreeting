@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Domain & Deployment Options Guide</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #fafcff;
+      color: #212529;
+      line-height: 1.7;
+    }
+    h1, h2, h3 {
+      color: #05497a;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+    h1 { font-size: 2.4rem; }
+    h2 { font-size: 2rem; }
+    h3 { font-size: 1.3rem; }
+    ul, ol {
+      margin: 1rem 0 1rem 2.2rem;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 0.5rem;
+    }
+    code {
+      background: #eff2fa;
+      color: #354562;
+      border-radius: 3px;
+      padding: 0.1rem 0.4rem;
+      font-size: 1rem;
+    }
+    pre {
+      background: #f3f6fb;
+      padding: 1rem;
+      border-radius: 7px;
+      overflow: auto;
+    }
+    em {
+      color: #ac0d45;
+      font-style: italic;
+    }
+    strong {
+      color: #27528a;
+    }
+    a {
+      color: #256eba;
+      text-decoration: underline;
+    }
+    blockquote {
+      border-left: 3px solid #afd7f7;
+      margin: 1.2rem 0;
+      padding: 0.8rem 1.2rem;
+      background: #f6fafd;
+      color: #215184;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>Custom Domain & Deployment Options Guide</h1>
+  <p>This guide outlines the different ways you can connect your <strong>custom domain</strong> (e.g., <code>myagency.com</code>) to your deployed AI Greetings application.</p>
+
+  <h2>Your Goal: A Professional, Branded URL</h2>
+  <p>The default URL from your deployment (e.g., <code>gengreeting-123.vercel.app</code>) is functional, but for a professional appearance, you want users to access the app from your <strong>own domain</strong>.</p>
+
+  <h2>Option 1: Subdomain (<em>Highly Recommended</em>)</h2>
+  <p>This is the industry-standard, most reliable, and easiest method for hosting a web application.</p>
+  <ul>
+    <li><strong>URL Structure:</strong> <a href="https://app.myagency.com" target="_blank" rel="noopener">https://app.myagency.com</a> (or <a href="https://cards.myagency.com" target="_blank" rel="noopener">cards.myagency.com</a>, etc.)</li>
+    <li><strong>How it Works:</strong> You create a new "record" in your domain's DNS settings that points a part of your domain (the "<em>subdomain</em>") directly to your deployed application on Vercel or Netlify. These services are built to handle this seamlessly.</li>
+  </ul>
+  <p><strong>Why it's Recommended:</strong></p>
+  <ul>
+    <li><strong>Easy Setup:</strong> Vercel and Netlify provide clear, step-by-step instructions. It usually takes less than 10 minutes.</li>
+    <li><strong>Secure & Scalable:</strong> It works perfectly with the host's global Content Delivery Network (CDN), ensuring your app is fast and secure (with automatic SSL certificates).</li>
+    <li><strong>Clean Separation:</strong> It keeps your main marketing website (<code>myagency.com</code>) separate from the application, which is good for organization and security.</li>
+    <li><strong>No Code Changes:</strong> Your application code doesn't need any special changes to work on a subdomain.</li>
+  </ul>
+
+  <h3>How to Set It Up (High-Level Steps):</h3>
+  <ol>
+    <li>
+      <strong>In Vercel/Netlify:</strong>
+      <ul>
+        <li>Go to your project's dashboard.</li>
+        <li>Navigate to the "<strong>Domains</strong>" section.</li>
+        <li>Enter your desired subdomain (e.g., <code>app.myagency.com</code>) and click "<strong>Add</strong>".</li>
+        <li>Your host will give you a value to use for a <code>CNAME</code> record. <strong>Copy</strong> this value.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>In Your Domain Registrar</strong> (e.g., GoDaddy, Namecheap, Cloudflare):
+      <ul>
+        <li>Go to the DNS management section for <code>myagency.com</code>.</li>
+        <li>Create a new DNS record:
+          <ul>
+            <li><strong>Type:</strong> <code>CNAME</code></li>
+            <li><strong>Name/Host:</strong> <code>app</code> (or whatever subdomain you chose)</li>
+            <li><strong>Value/Points to:</strong> Paste the value you copied from your host.</li>
+          </ul>
+        </li>
+        <li><strong>Save</strong> the record.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>Wait:</strong> DNS changes can take a few minutes to a few hours to propagate. Your host will automatically detect the change, configure your domain, and secure it with an SSL certificate.
+    </li>
+  </ol>
+
+  <h2>Option 2: Sub-Path / Sub-Directory (<em>Advanced & Not Recommended</em>)</h2>
+  <p>This method involves making the app available at a path on your main domain, like <a href="https://myagency.com/app" target="_blank" rel="noopener">https://myagency.com/app</a>.</p>
+  <ul>
+    <li><strong>How it Works:</strong> This requires a <strong>Reverse Proxy</strong>. Your main web server for <code>myagency.com</code> must be configured to intercept all requests for the <code>/app</code> path. When it receives such a request, it secretly forwards it to your Vercel/Netlify app, gets the response, and then sends it back to the user as if it came from <code>myagency.com</code>.</li>
+  </ul>
+  <p><strong>Why it's <span style="color: #dc2b2b;">NOT</span> Recommended (for this use case):</strong></p>
+  <ul>
+    <li><strong>Requires Server-Side Configuration:</strong> You must have deep control over the server or gateway for <code>myagency.com</code>. If your main site is hosted on a managed platform like GoHighLevel, Squarespace, or another static host, you likely cannot configure a reverse proxy yourself.</li>
+    <li><strong>Complex Setup:</strong> Configuring a reverse proxy (e.g., in Nginx, Apache, or with Cloudflare Workers) is a technical task that can be difficult to get right and can easily lead to errors.</li>
+    <li><strong>Asset Path Issues:</strong> The application's internal links (for CSS, JavaScript, etc.) will likely break because they don't know they're being served from a <code>/app</code> sub-path. This requires modifying the application's build configuration to set a "<strong>base path</strong>," which adds significant complexity.</li>
+    <li><strong>Maintenance Overhead:</strong> Any changes to routing or assets could require updates to your proxy configuration.</li>
+  </ul>
+  <strong>Conclusion:</strong>
+  <blockquote>
+    While technically possible, this approach adds significant complexity for little benefit over the subdomain method. It should only be attempted if you have a specific infrastructure requirement and the technical expertise to manage it.
+  </blockquote>
+
+  <h2>Option 3: iFrame (<em>Do Not Use</em>)</h2>
+  <ul>
+    <li><strong>How it Works:</strong> You would create a page at <code>myagency.com/app</code> and simply embed the Vercel app inside an <code>&lt;iframe&gt;</code> element.</li>
+  </ul>
+  <p><strong>Why it's a Bad Idea:</strong></p>
+  <ul>
+    <li><strong>Poor User Experience:</strong> iFrames often feel clunky and can have issues with scrolling, responsiveness, and functionality.</li>
+    <li><strong>URL Issues:</strong> The browser's URL bar will always show <code>myagency.com/app</code>, which is confusing for users and makes sharing links impossible.</li>
+    <li><strong>Security & SEO Problems:</strong> It can introduce security concerns and is generally bad for Search Engine Optimization.</li>
+  </ul>
+  <strong>Conclusion:</strong>
+  <blockquote>
+    Avoid iFrames for embedding a full application. They are not a professional solution.
+  </blockquote>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Greetings Agency & Implementation Guide</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; padding: 2em; background: #fafafa; color: #222; }
+    h1, h2, h3, h4 { font-weight: 700; margin-top: 1.8em; }
+    h1 { font-size: 2.2em; border-bottom: 2px solid white; padding-bottom: 0.4em; }
+    h2 { font-size: 1.6em; color: #1976d2; }
+    h3 { font-size: 1.3em; color: white }
+    h4 { font-size: 1.1em; color: #555; }
+    ul, ol { padding-left: 1.8em; margin-bottom: 1.2em; }
+    code { background: #f3f3f3; padding: 2px 6px; border-radius: 4px; font-size: 0.97em; }
+    pre { background: #1a1a1a; color: yellow; padding: 1em; overflow-x: auto; border-radius: 6px; margin-bottom: 1.2em; }
+    table { border-collapse: collapse; margin-top: 1.2em; margin-bottom: 1.2em; }
+    th, td { border: 1px solid #ccc; padding: 0.5em 1em; text-align: left; }
+    th { background: #e3eafc; }
+    em { font-style: italic; }
+    strong { font-weight: bold; }
+    .note { background: #fff3cd; border-left: 5px solid #ffe066; padding: 1em; margin-bottom: 1.2em; border-radius: 4px; }
+    a { color: #1976d2; text-decoration: underline; }
+    .step { margin-bottom: 1em; }
+    .var-table { width: 100%; max-width: 520px; }
+    .var-table th, .var-table td { font-size: 0.95em; }
+  </style>
+</head>
+<body>
+  <h1>AI Greetings Agency &amp; Implementation Guide</h1>
+
+  <h2>1. Introduction for Agencies &amp; Developers</h2>
+  <p>
+    This guide provides a comprehensive walkthrough for deploying, customizing (whitelabeling), and integrating the AI Greetings application into a marketing funnel. It is designed for technical users, such as agency owners or developers, who wish to offer this tool to their clients under their own brand.
+  </p>
+
+  <h2>2. Deployment Guide</h2>
+  <p>Follow these steps to deploy your own instance of the AI Greetings application.</p>
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>A hosting provider for static websites with serverless function support (e.g., <strong>Vercel</strong>, <strong>Netlify</strong>).</li>
+    <li>A Google Gemini API Key.</li>
+    <li>A GoHighLevel (GHL) account with API access.</li>
+  </ul>
+
+  <h3>Step 1: Get the Application Code</h3>
+  <p>
+    You should have a directory containing all the application files (<code>index.html</code>, <code>index.tsx</code>, <code>api/</code>, etc.).
+  </p>
+
+  <h3>Step 2: Deploy the Application</h3>
+  <ol>
+    <li>Upload all the application files to your chosen hosting provider (<strong>Vercel</strong> is recommended). Since this is a static React application with a serverless function, the host will handle the setup. Simply import your project from your Git repository.</li>
+    <li>Once deployed, you will have a public URL for your application (e.g., <code>https://your-app-name.vercel.app</code>).</li>
+  </ol>
+
+  <h3>Step 3: Configure Environment Variables <em>(Crucial)</em></h3>
+  <p>Your application will not work until you configure its security keys and API keys in your hosting provider's settings.</p>
+  <ul>
+    <li>
+      <strong>Vercel/Netlify:</strong> Go to your project settings &rarr; Environment Variables.<br>
+      Add the following variables:
+      <table class="var-table">
+        <thead>
+          <tr>
+            <th>Variable Name</th>
+            <th>Description</th>
+            <th>Example Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>GEMINI_API_KEY</code></td>
+            <td>Your Google Gemini API Key.</td>
+            <td><code>AIzaSy...</code></td>
+          </tr>
+          <tr>
+            <td><code>GHL_API_KEY</code></td>
+            <td>Your GoHighLevel API Key (find it in your GHL account settings).</td>
+            <td><code>ey...</code></td>
+          </tr>
+          <tr>
+            <td><code>GHL_PASSWORD_FIELD_ID</code></td>
+            <td>The ID of the GHL custom field for storing user passwords (see Section 5).</td>
+            <td><code>z8y...</code></td>
+          </tr>
+          <tr>
+            <td><code>GHL_QUOTA_FIELD_ID</code></td>
+            <td>The ID of the GHL custom field for the user's monthly generation limit.</td>
+            <td><code>a1b...</code></td>
+          </tr>
+          <tr>
+            <td><code>GHL_USED_FIELD_ID</code></td>
+            <td>The ID of the GHL custom field for tracking a user's used credits in a cycle.</td>
+            <td><code>c2d...</code></td>
+          </tr>
+          <tr>
+            <td><code>GHL_PLAN_FIELD_ID</code></td>
+            <td>The ID of the GHL custom field for storing the user's current subscription plan name.</td>
+            <td><code>e3f...</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </li>
+  </ul>
+
+  <h2>3. Connecting a Custom Domain <em>(Recommended)</em></h2>
+  <p>
+    Once your application is deployed, you'll want to serve it from your own domain instead of the default hosting URL. This enhances your brand's professionalism and credibility.<br>
+    For a detailed comparison of your options and step-by-step instructions, please refer to the dedicated guide:<br>
+    &#x27A1; <a href="#">Read the Custom Domain &amp; Deployment Options Guide</a>
+  </p>
+
+  <h2>4. Whitelabel Customization</h2>
+  <p>
+    The application is built to be easily rebranded for agency use. To access the customization dashboard, add <code>?view=agency</code> to your deployed application's URL (e.g., <code>https://gengreeting.yourdomain.com/?view=agency</code>). The default password is <code>admin123</code>.
+  </p>
+
+  <h3>4.1. Branding &amp; API</h3>
+  <ul>
+    <li><strong>App Name &amp; Logo:</strong> Set your application's name, accent color, and logo.</li>
+    <li>
+      <strong>API Configuration (Optional):</strong> You can enter a Gemini API key here that will be used only for your clients. This allows you to bill clients for usage separately from your main account. If left blank, it defaults to the <code>GEMINI_API_KEY</code> you set in your environment variables.
+    </li>
+    <li><strong>Plan Configuration:</strong> Set the names and monthly credit limits for the subscription tiers you will offer to your clients.</li>
+  </ul>
+
+  <h3>4.2. Legal &amp; Compliance Configuration <em>(Important)</em></h3>
+  <ol>
+    <li>Go to the "Legal &amp; Compliance" section in the Agency Dashboard.</li>
+    <li>Paste your company's <strong>Privacy Policy</strong> and <strong>Terms &amp; Conditions</strong> into the provided fields.</li>
+    <li>
+      The content you save here will be displayed to your end-users when they click the corresponding links in the application's footer.
+    </li>
+  </ol>
+
+  <h2>5. Authentication Setup (GHL Integration)</h2>
+  <p>
+    This application uses GHL as its user database. When a user registers, a new Contact is created in your GHL account. To make this work, you must create custom fields in GHL to store the user's (hashed) password and related details.
+  </p>
+
+  <h3>Step 1: Create a Custom Field in GHL</h3>
+  <ol>
+    <li>In your GHL account, go to <strong>Settings &rarr; Custom Fields</strong>.</li>
+    <li>Click <strong>"Add Field"</strong>.</li>
+    <li>Choose the <strong>"Text"</strong> field type.<br>
+      <strong>Field Name:</strong> Give it a clear name, like <code>App Password</code>.<br>
+      <strong>Placeholder:</strong> You can write something like <em>Do not edit this field</em>.</li>
+    <li>Click <strong>"Save"</strong>.</li>
+    <li>Repeat this process to create the other required fields:
+      <ul>
+        <li><strong>App Monthly Quota (Number)</strong></li>
+        <li><strong>App Credits Used (Number)</strong></li>
+        <li><strong>App Current Plan (Text)</strong></li>
+      </ul>
+    </li>
+  </ol>
+  <h3>Step 2: Get the Custom Field ID</h3>
+  <ol>
+    <li>After saving, find the new custom field you just created in the list.</li>
+    <li>Look for the <strong>"Key"</strong> value. It will look something like <code>app_password</code> or a random string. This is your Field ID. Copy it.</li>
+  </ol>
+
+  <h3>Step 3: Set Your Environment Variables</h3>
+  <ol>
+    <li>Go back to your hosting provider (<strong>Vercel/Netlify</strong>).</li>
+    <li>Set the <code>GHL_PASSWORD_FIELD_ID</code> environment variable to the Key you just copied from GHL.</li>
+    <li>Repeat this for <code>GHL_QUOTA_FIELD_ID</code>, <code>GHL_USED_FIELD_ID</code>, and <code>GHL_PLAN_FIELD_ID</code> with their respective keys.</li>
+    <li>Ensure your <code>GHL_API_KEY</code> is also set correctly as described in Section 2.</li>
+  </ol>
+  <p>Your authentication system is now fully configured.</p>
+
+  <h2>6. GoHighLevel (GHL) Funnel Integration</h2>
+  <p>
+    The project includes pre-built HTML files designed for a GHL funnel:
+    <ul>
+      <li><code>ghl-landing-page.html</code>: Your main sales page.</li>
+      <li><code>ghl-pricing-page.html</code>: A page to display different plans.</li>
+      <li><code>ghl-thank-you-page.html</code>: The page users see after signing up.</li>
+    </ul>
+  </p>
+  <h3>Implementation Steps</h3>
+  <ol>
+    <li>In your GHL account, create a new <strong>Funnel</strong>.</li>
+    <li>
+      For each page (<strong>Landing, Pricing, Thank You</strong>), create a new step in your funnel.
+    </li>
+    <li>
+      Open the GHL page builder for a step, and add a custom <strong>HTML/CSS block</strong>.
+    </li>
+    <li>
+      Copy the entire content of the corresponding HTML file (e.g., <code>ghl-landing-page.html</code>) and paste it into the block.
+    </li>
+    <li>
+      Crucially, find all comments marked <code>&lt;!-- NOTE FOR GHL USER: ... --&gt;</code>. These comments guide you on what to customize.
+    </li>
+    <li>
+      Replace all placeholder links (<code>href="#"</code>) with your actual GHL form links, popup triggers, checkout pages, etc.
+    </li>
+  </ol>
+  <h4>Linking the Funnel to Your App</h4>
+  <ol>
+    <li>Navigate to your "Thank You" page in the GHL funnel builder.</li>
+    <li>Find the <strong>"Go to the App"</strong> button.</li>
+    <li>Change its link from the placeholder (<code>#</code>) to the public URL of your deployed AI Greetings application (e.g., <code>https://gengreeting.yourdomain.com</code>).</li>
+  </ol>
+</body>
+</html>

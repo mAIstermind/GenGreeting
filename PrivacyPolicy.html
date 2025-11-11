@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Privacy Policy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html {
+      box-sizing: border-box;
+      font-size: 18px;
+    }
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f7fbfc;
+      color: #24324d;
+      margin: 0;
+      padding: 0;
+    }
+    .policy-container {
+      max-width: 720px;
+      margin: 2.5rem auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 24px 0 rgba(36,59,85,0.10);
+      padding: 2.5rem 1.4rem 2.5rem 1.4rem;
+    }
+    h1 {
+      font-size: 2.1rem;
+      color: #1d4b8d;
+      margin-top: 0;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.03em;
+      border-bottom: 2.5px solid #eaf2fd;
+      padding-bottom: 0.3em;
+      margin-bottom: 0.5em;
+    }
+    .last-updated {
+      text-align: center;
+      color: #6f859d;
+      font-size: 1.03em;
+      margin-bottom: 2.2em;
+    }
+    h2 {
+      color: #246cef;
+      font-size: 1.16rem;
+      margin-top: 2rem;
+      margin-bottom: 0.6rem;
+      font-weight: 700;
+    }
+    ul, ol {
+      margin-left: 1.4em;
+      margin-top: 0.7em;
+      margin-bottom: 1.3em;
+      line-height: 1.7;
+    }
+    li {
+      margin-bottom: 0.5em;
+    }
+    p {
+      margin-bottom: 1.2em;
+      margin-top: 0.5em;
+    }
+    em {
+      color: #ca2345;
+      font-style: italic;
+    }
+    strong {
+      font-weight: 600;
+      color: #1a4079;
+    }
+    .highlight {
+      color: #1750ad;
+      font-weight: 600;
+      background: #f5fafd;
+      padding: 0.1em 0.3em;
+      border-radius: 3px;
+    }
+    @media (max-width: 600px) {
+      .policy-container {
+        padding: 1.3rem 0.3rem;
+        border-radius: 0;
+      }
+      h1 {
+        font-size: 1.36rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="policy-container">
+    <h1>Privacy Policy</h1>
+    <div class="last-updated">Last updated: <strong>10/11/2025</strong></div>
+    
+    <h2>1. Our Commitment to Your Privacy</h2>
+    <p>
+      This application is designed with your privacy as a <strong>top priority</strong>. 
+      We are committed to processing the <em>absolute minimum amount of data</em> required to provide our service, and <strong>we do not store your sensitive information</strong>.
+    </p>
+
+    <h2>2. Data We Process</h2>
+    <p>
+      When you use our services, we process the following data <span class="highlight">on a temporary, in-memory basis</span> to fulfill your requests:
+    </p>
+    <ul>
+      <li>
+        <strong>CSV File Content:</strong>
+        The data contained within the CSV files you upload (such as names and image URLs) is read into the application's memory for the <strong>sole purpose</strong> of generating the greeting cards. This data is processed in real time and is <span class="highlight">never written to disk or stored in any database</span> on our servers.
+      </li>
+      <li>
+        <strong>Uploaded Image URLs:</strong>
+        When you provide an image URL in your CSV, our server temporarily fetches this image to pass it to the AI model for generation. <strong>The image itself is not stored.</strong>
+      </li>
+      <li>
+        <strong>Session Duration:</strong> Once your generation request is complete and the browser session ends, this information is <strong>discarded</strong>.
+      </li>
+    </ul>
+
+    <h2>3. Data We <em>DO NOT</em> Store</h2>
+    <p>
+      We want to be <strong>explicitly clear</strong> about what we do <em>not</em> do:
+    </p>
+    <ul>
+      <li>We <strong>do not</strong> save, store, or log the contents of your uploaded CSV files.</li>
+      <li>We <strong>do not</strong> store the images generated for you.</li>
+      <li>We <strong>do not</strong> store the profile pictures or logos fetched from the URLs in your CSV.</li>
+    </ul>
+    <p>
+      <strong>Your contact lists and the content you create are yours alone.</strong><br>
+      They are <strong>not used</strong> for any other purpose, such as training AI models or marketing.
+    </p>
+
+    <h2>4. Data Shared with Third Parties</h2>
+    <p>
+      In order to generate the images, the data you provide (e.g., name, prompt text, and images from URLs) is sent to the <strong>Google Gemini API</strong>. 
+      We recommend you review <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's API policies</a> for information on how they handle data.<br>
+      <strong>We do not share your data with any other third parties.</strong>
+    </p>
+
+    <h2>5. Changes to This Policy</h2>
+    <p>
+      We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. 
+      You are advised to review this Privacy Policy periodically for any updates.
+    </p>
+  </div>
+</body>
+</html>

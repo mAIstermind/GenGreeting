@@ -75,11 +75,16 @@ export default async function handler(req: any, res: any) {
             return res.status(401).json({ error: 'Invalid email or password.' });
         }
 
-        step = 'EXTRACT_PASSWORD_HASH';
+        step = 'EXTRACT_AND_VALIDATE_PASSWORD_HASH';
         const storedHash = getCustomFieldValue(contact.customFields, GHL_PASSWORD_FIELD_ID);
         
-        if (!storedHash) {
-             return res.status(401).json({ error: 'Account not fully set up. Please register again.' });
+        // CRITICAL FIX: Validate that the stored hash is a non-empty string before proceeding.
+        // This prevents the bcrypt 'compare' function from crashing the serverless function.
+        if (!storedHash || typeof storedHash !== 'string' || storedHash.length < 10) {
+            // This case handles missing hashes, non-string data types, or empty values.
+            // Log a specific error for debugging but return a generic message for security.
+            console.error(`Password hash not found or is invalid for contact: ${contact.id}`);
+            return res.status(401).json({ error: 'Invalid email or password.' });
         }
         
         step = 'COMPARE_PASSWORD';
