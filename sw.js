@@ -29,7 +29,7 @@ self.addEventListener('fetch', event => {
   }
   
   // Do not cache API requests to our serverless function
-  if (event.request.url.includes('/api/gemini')) {
+  if (event.request.url.includes('/api/')) {
       return;
   }
 

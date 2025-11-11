@@ -1,5 +1,5 @@
 // /api/login.ts
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 
 // --- START: CONFIGURATION ---
 
@@ -70,6 +70,10 @@ export default async function handler(req: any, res: any) {
         if (!searchResponse.ok) {
             const errorBody = await searchResponse.text();
             console.error("GHL Contact Lookup Error:", errorBody);
+            // NEW CHANGE: Check for the specific Invalid JWT error to provide better feedback.
+            if (errorBody.includes("Invalid JWT")) {
+                throw new Error('Authentication with the CRM failed. Please verify the GHL_API_KEY is correct in your server configuration.');
+            }
             throw new Error('Could not verify user with the CRM.');
         }
 

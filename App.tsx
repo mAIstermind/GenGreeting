@@ -425,7 +425,7 @@ function App() {
         setAppState('done');
   };
 
-  const handleMap = (mapping: { name: string; profileImage: string; email: string }, promptTemplate: string) => {
+  const handleMap = (mapping: { name: string; profileImage: string }, promptTemplate: string) => {
     if (!csvFile) return;
 
     setError(null);
@@ -440,7 +440,6 @@ function App() {
       complete: async (results: any) => {
         let parsedContacts: Contact[] = results.data.map((row: any) => ({
           name: row[mapping.name] || '',
-          email: mapping.email ? row[mapping.email] || '' : '',
           profileImageUrl: mapping.profileImage ? row[mapping.profileImage] || '' : '',
         })).filter((c: Contact) => c.name);
         
@@ -775,7 +774,7 @@ function App() {
       <Footer 
         onPrivacyClick={() => setIsPrivacyOpen(true)} 
         onTermsClick={() => setIsTermsOpen(true)}
-        onDownloadAppClick={() => setIsPwaInstallModalOpen(true)}
+        onDownloadAppClick={() => setIsPwaInstallModalOpen(false)}
       />
     </div>
   );

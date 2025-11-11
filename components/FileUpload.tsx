@@ -77,7 +77,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled }
           {fileName ? fileName : 'Drag & drop a CSV file, or click to upload'}
         </span>
         <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
-          CSV must contain a 'name' column. Optionally, add 'email' and 'imageUrl' columns.
+          CSV must contain a 'name' column. Optionally, add an 'imageUrl' column.
         </span>
         <input
           id="file-upload"
