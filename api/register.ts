@@ -1,6 +1,4 @@
 // /api/register.ts
-// FIX: Import 'Buffer' to make it available in the serverless function scope, which is required by dependencies like bcryptjs.
-import { Buffer } from "buffer";
 import bcrypt from 'bcryptjs';
 
 // --- START: CONFIGURATION ---
