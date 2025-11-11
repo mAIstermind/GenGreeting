@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import JSZip from 'jszip';
@@ -426,7 +425,7 @@ function App() {
         setAppState('done');
   };
 
-  const handleMap = (mapping: { name: string; profileImage: string }, promptTemplate: string) => {
+  const handleMap = (mapping: { name: string; profileImage: string; email: string }, promptTemplate: string) => {
     if (!csvFile) return;
 
     setError(null);
@@ -441,6 +440,7 @@ function App() {
       complete: async (results: any) => {
         let parsedContacts: Contact[] = results.data.map((row: any) => ({
           name: row[mapping.name] || '',
+          email: mapping.email ? row[mapping.email] || '' : '',
           profileImageUrl: mapping.profileImage ? row[mapping.profileImage] || '' : '',
         })).filter((c: Contact) => c.name);
         

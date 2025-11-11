@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import type { GeneratedCard } from '../types';
 import { DownloadIcon } from './icons/DownloadIcon';
@@ -43,6 +41,11 @@ export const GreetingCard: React.FC<GreetingCardProps> = ({ card, onEdit, isPrev
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex-grow">
           <p className="font-semibold text-lg text-gray-800 dark:text-white truncate" title={card.name}>{card.name}</p>
+          {card.email && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 truncate" title={card.email}>
+              {card.email}
+            </p>
+          )}
         </div>
         {!isPreview && (
             <button

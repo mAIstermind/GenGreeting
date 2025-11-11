@@ -1,10 +1,8 @@
-
-
-
 import type { User } from "./auth";
 
 export interface Contact {
   name: string;
+  email?: string;
   profileImageUrl?: string;
 }
 
