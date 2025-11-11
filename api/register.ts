@@ -1,5 +1,7 @@
 // /api/register.ts
-import { hash } from 'bcryptjs';
+// FIX: Import 'Buffer' to make it available in the serverless function scope, which is required by dependencies like bcryptjs.
+import { Buffer } from "buffer";
+import bcrypt from 'bcryptjs';
 
 // --- START: CONFIGURATION ---
 
@@ -47,7 +49,7 @@ export default async function handler(req: any, res: any) {
         };
 
         step = 'HASH_PASSWORD';
-        const hashedPassword = await hash(password, 10); 
+        const hashedPassword = await bcrypt.hash(password, 10); 
 
         step = 'LOOKUP_CONTACT';
         const searchResponse = await fetch(`${GHL_API_URL}lookup?email=${encodeURIComponent(email)}`, { headers: ghlHeaders });

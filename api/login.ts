@@ -1,5 +1,7 @@
 // /api/login.ts
-import { compare } from 'bcryptjs';
+// FIX: Import 'Buffer' to make it available in the serverless function scope, which is required by dependencies like bcryptjs.
+import { Buffer } from "buffer";
+import bcrypt from 'bcryptjs';
 
 // --- START: CONFIGURATION ---
 
@@ -61,11 +63,15 @@ export default async function handler(req: any, res: any) {
         step = 'LOOKUP_CONTACT';
         const searchResponse = await fetch(`${GHL_API_URL}lookup?email=${encodeURIComponent(email)}`, { headers: ghlHeaders });
         
+        // FIX: Handle 404 (user not found) as a normal authentication failure, not a server error.
+        if (searchResponse.status === 404) {
+            return res.status(401).json({ error: 'Invalid email or password.' });
+        }
+
         if (!searchResponse.ok) {
             const errorBody = await searchResponse.text();
             console.error("GHL Contact Lookup Error:", errorBody);
-            // Don't expose detailed CRM errors to the client
-            throw new Error('Could not verify user with CRM.');
+            throw new Error('Could not verify user with the CRM.');
         }
 
         const searchData = await searchResponse.json();
@@ -88,7 +94,7 @@ export default async function handler(req: any, res: any) {
         }
         
         step = 'COMPARE_PASSWORD';
-        const isMatch = await compare(password, storedHash);
+        const isMatch = await bcrypt.compare(password, storedHash);
 
         if (!isMatch) {
             return res.status(401).json({ error: 'Invalid email or password.' });
