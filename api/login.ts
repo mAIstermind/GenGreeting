@@ -124,6 +124,6 @@ export default async function handler(req: any, res: any) {
         console.error('Request Email:', req.body.email); // Log email for context, but never the password
         console.error('Error Message:', error.message);
         console.error('Stack:', error.stack);
-        return res.status(500).json({ error: 'Login failed due to an internal server error.' });
+        return res.status(500).json({ error: error.message || 'Login failed due to an internal server error.' });
     }
 }
