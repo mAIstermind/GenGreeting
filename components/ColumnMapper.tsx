@@ -67,7 +67,7 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
         <div>
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Map Your CSV Column(s)</h2>
             <p className="text-gray-600 dark:text-gray-400">
-                Match the columns from <span className="font-semibold text-blue-500">{fileName}</span> to the fields below. Only 'Name' is required.
+                Match the columns from <span className="font-semibold text-blue-500">{fileName}</span> to the fields below. Only the 'Name' column is required. Other columns in your file (like 'email') will be ignored.
             </p>
         </div>
       

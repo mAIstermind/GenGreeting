@@ -10,7 +10,8 @@ if (!apiKey) {
 const ai = new GoogleGenAI({ apiKey });
 
 const GHL_API_KEY = process.env.GHL_API_KEY;
-const GHL_API_URL = 'https://services.leadconnectorhq.com/contacts/';
+const GHL_API_HOST = process.env.GHL_API_HOST || 'https://services.leadconnectorhq.com';
+const GHL_API_URL = `${GHL_API_HOST}/contacts/`;
 
 const GHL_USED_FIELD_ID = process.env.GHL_USED_FIELD_ID;
 const GHL_QUOTA_FIELD_ID = process.env.GHL_QUOTA_FIELD_ID;

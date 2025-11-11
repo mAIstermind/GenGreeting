@@ -35,6 +35,7 @@ Your application will not work until you configure its security keys and API key
 | ----------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `GEMINI_API_KEY`        | Your Google Gemini API Key.                                                                             | `AIzaSy...`                           |
 | `GHL_API_KEY`           | Your GoHighLevel API Key (find it in your GHL account settings).                                        | `ey...`                               |
+| `GHL_API_HOST`          | (Optional) The API host for your GHL region. Defaults to the US. Use `https://services.eu.leadconnectorhq.com` for the EU region. | `https://services.leadconnectorhq.com`|
 | `GHL_PASSWORD_FIELD_ID` | The ID of the GHL custom field for storing user passwords (see Section 5).                              | `z8y...`                              |
 | `GHL_QUOTA_FIELD_ID`    | The ID of the GHL custom field for the user's monthly generation limit.                                 | `a1b...`                              |
 | `GHL_USED_FIELD_ID`     | The ID of the GHL custom field for tracking a user's used credits in a cycle.                           | `c2d...`                              |

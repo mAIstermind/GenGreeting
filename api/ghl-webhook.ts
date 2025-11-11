@@ -7,7 +7,8 @@
 // --- START: CONFIGURATION ---
 
 const GHL_API_KEY = process.env.GHL_API_KEY;
-const GHL_API_URL = 'https://services.leadconnectorhq.com/contacts/';
+const GHL_API_HOST = process.env.GHL_API_HOST || 'https://services.leadconnectorhq.com';
+const GHL_API_URL = `${GHL_API_HOST}/contacts/`;
 
 // IMPORTANT: These custom field IDs must be set in your Vercel/Netlify environment variables.
 // These variables have been aligned with the documentation to remove the `_PWA_` prefix.
