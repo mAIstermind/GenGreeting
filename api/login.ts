@@ -1,15 +1,6 @@
+
 // /api/login.ts
-import * as bcryptPkg from 'bcryptjs';
-
-// Helper to robustly get the bcrypt library regardless of import environment (CJS/ESM/CDN)
-const getBcrypt = () => {
-    const lib = bcryptPkg as any;
-    if (lib.hash && typeof lib.hash === 'function') return lib;
-    if (lib.default && lib.default.hash && typeof lib.default.hash === 'function') return lib.default;
-    return lib;
-};
-
-const bcrypt = getBcrypt();
+import * as bcryptjs from 'bcryptjs';
 
 // --- START: CONFIGURATION ---
 
@@ -25,6 +16,9 @@ const GHL_USED_FIELD_ID = process.env.GHL_USED_FIELD_ID;
 const GHL_PLAN_FIELD_ID = process.env.GHL_PLAN_FIELD_ID;         
 
 // --- END: CONFIGURATION ---
+
+// FIX: Robust import for Vercel environment to ensure bcrypt object is correctly resolved
+const bcrypt = (bcryptjs as any).default || bcryptjs;
 
 /**
  * Helper to find a custom field's value from the GHL contact object's customFields array.
@@ -107,9 +101,6 @@ export default async function handler(req: any, res: any) {
         }
         
         step = 'COMPARE_PASSWORD';
-        if (!bcrypt.compare) {
-            throw new Error('bcrypt.compare function not found. Check library import.');
-        }
         const isMatch = await bcrypt.compare(password, storedHash);
 
         if (!isMatch) {
