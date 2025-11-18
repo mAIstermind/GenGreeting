@@ -1,5 +1,8 @@
 // /api/register.ts
-import bcrypt from 'bcryptjs';
+import bcryptPkg from 'bcryptjs';
+
+// Handle CJS/ESM interop for bcryptjs
+const bcrypt = (bcryptPkg as any).default || bcryptPkg;
 
 // --- START: CONFIGURATION ---
 
