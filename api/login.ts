@@ -72,7 +72,7 @@ export default async function handler(req: any, res: any) {
             console.error("GHL Contact Lookup Error:", errorBody);
             // NEW CHANGE: Check for the specific Invalid JWT error to provide better feedback.
             if (errorBody.includes("Invalid JWT")) {
-                throw new Error('Authentication with the CRM failed. Please verify the GHL_API_KEY is correct in your server configuration.');
+                throw new Error('Authentication with the CRM failed. Please verify the GHL_API_KEY is correct and that the GHL_API_HOST is set for your region (e.g., https://services.eu.leadconnectorhq.com for EU accounts) in your server configuration.');
             }
             throw new Error('Could not verify user with the CRM.');
         }

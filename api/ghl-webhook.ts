@@ -61,9 +61,15 @@ export default async function handler(req: any, res: any) {
 
         if (!lookupResponse.ok) {
             const errorBody = await lookupResponse.text();
-            console.warn(`Webhook: Could not find GHL contact for email ${email}. Error: ${errorBody}`);
-            // If contact doesn't exist, we can't apply a bonus. This is not a server error.
-            return res.status(200).json({ success: true, message: 'Contact not found, no bonus applied.' });
+            if (lookupResponse.status === 404) {
+                console.warn(`Webhook: Could not find GHL contact for email ${email}.`);
+                return res.status(200).json({ success: true, message: 'Contact not found, no bonus applied.' });
+            }
+            console.error(`Webhook: Could not find GHL contact for email ${email}. Error: ${errorBody}`);
+            if (errorBody.includes("Invalid JWT")) {
+                throw new Error('Authentication with the CRM failed. Please verify the GHL_API_KEY is correct and that the GHL_API_HOST is set for your region (e.g., https://services.eu.leadconnectorhq.com for EU accounts) in your server configuration.');
+            }
+            throw new Error('Failed to look up contact in CRM.');
         }
         
         const lookupData = await lookupResponse.json();

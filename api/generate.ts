@@ -44,7 +44,11 @@ export default async function handler(req: any, res: any) {
 
         const fetchContactResponse = await fetch(`${GHL_API_URL}${contactId}`, { headers: ghlHeaders });
         if (!fetchContactResponse.ok) {
-            console.error("GHL Fetch Error:", await fetchContactResponse.text());
+            const errorBody = await fetchContactResponse.text();
+            console.error("GHL Fetch Error:", errorBody);
+            if (errorBody.includes("Invalid JWT")) {
+                throw new Error('Authentication with the CRM failed. Please verify the GHL_API_KEY is correct and that the GHL_API_HOST is set for your region (e.g., https://services.eu.leadconnectorhq.com for EU accounts) in your server configuration.');
+            }
             throw new Error('Failed to fetch contact details from the CRM.');
         }
 
