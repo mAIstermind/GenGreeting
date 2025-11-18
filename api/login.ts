@@ -1,6 +1,6 @@
 
 // /api/login.ts
-import * as bcryptjs from 'bcryptjs';
+import { createRequire } from 'module';
 
 // --- START: CONFIGURATION ---
 
@@ -17,8 +17,9 @@ const GHL_PLAN_FIELD_ID = process.env.GHL_PLAN_FIELD_ID;
 
 // --- END: CONFIGURATION ---
 
-// FIX: Robust import for Vercel environment to ensure bcrypt object is correctly resolved
-const bcrypt = (bcryptjs as any).default || bcryptjs;
+// FIX: Use createRequire to properly load CommonJS module 'bcryptjs' in Vercel's ESM environment
+const require = createRequire(import.meta.url);
+const bcrypt = require('bcryptjs');
 
 /**
  * Helper to find a custom field's value from the GHL contact object's customFields array.

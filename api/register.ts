@@ -1,6 +1,6 @@
 
 // /api/register.ts
-import * as bcryptjs from 'bcryptjs';
+import { createRequire } from 'module';
 
 // --- START: CONFIGURATION ---
 
@@ -20,8 +20,9 @@ const WEBINAR_ATTENDEE_TAG = 'pwa-webinar-attendee';
 
 // --- END: CONFIGURATION ---
 
-// FIX: Robust import for Vercel environment to ensure bcrypt object is correctly resolved
-const bcrypt = (bcryptjs as any).default || bcryptjs;
+// FIX: Use createRequire to properly load CommonJS module 'bcryptjs' in Vercel's ESM environment
+const require = createRequire(import.meta.url);
+const bcrypt = require('bcryptjs');
 
 export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {
@@ -51,7 +52,7 @@ export default async function handler(req: any, res: any) {
         };
 
         step = 'HASH_PASSWORD';
-        // bcrypt should work directly with the default import in this environment
+        // bcrypt should work directly with the require import
         const hashedPassword = await bcrypt.hash(password, 10); 
 
         step = 'LOOKUP_CONTACT';

@@ -1,17 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import { CheckIcon } from './icons/CheckIcon';
 import { promptTemplates, defaultPromptTemplate } from '../promptTemplates';
 
 interface ColumnMapperProps {
   headers: string[];
-  onMap: (mapping: { name: string; email: string; profileImage: string }, promptTemplate: string) => void;
+  onMap: (mapping: { name: string; profileImage: string }, promptTemplate: string) => void;
   onCancel: () => void;
   fileName: string;
 }
 
 export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCancel, fileName }) => {
   const [nameColumn, setNameColumn] = useState('');
-  const [emailColumn, setEmailColumn] = useState('');
   const [profileImageColumn, setProfileImageColumn] = useState('');
   const [templateId, setTemplateId] = useState(defaultPromptTemplate.id);
   const [promptMode, setPromptMode] = useState<'template' | 'custom'>('template');
@@ -21,20 +21,14 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
   useEffect(() => {
     // Auto-detect columns based on common names
     const nameGuess = headers.find(h => h.toLowerCase().includes('name'));
-    const emailGuess = headers.find(h => h.toLowerCase().includes('email') || h.toLowerCase().includes('e-mail'));
     const imageGuess = headers.find(h => h.toLowerCase().includes('image') || h.toLowerCase().includes('logo') || h.toLowerCase().includes('url') || h.toLowerCase().includes('photo'));
     
     if (nameGuess) setNameColumn(nameGuess);
-    if (emailGuess) setEmailColumn(emailGuess);
     if (imageGuess) setProfileImageColumn(imageGuess);
   }, [headers]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setNameColumn(e.target.value);
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setEmailColumn(e.target.value);
   };
 
   const handleProfileImageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -46,7 +40,6 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
     if (isMappingValid) {
         const mapping = { 
             name: nameColumn, 
-            email: emailColumn, 
             profileImage: profileImageColumn 
         };
 
@@ -94,24 +87,6 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, onMap, onCa
                     className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                 >
                     <option value="">Select a column...</option>
-                    {headers.map(header => (
-                    <option key={header} value={header}>{header}</option>
-                    ))}
-                </select>
-            </div>
-
-             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <label htmlFor="email-column" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
-                    Email Address <span className="text-base font-normal">(Optional)</span>
-                    <span className="block text-sm text-gray-500 dark:text-gray-400">e.g., 'Email', 'Work Email'</span>
-                </label>
-                <select
-                    id="email-column"
-                    value={emailColumn}
-                    onChange={handleEmailChange}
-                    className="mt-1 block w-full sm:w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                >
-                    <option value="">Do not map</option>
                     {headers.map(header => (
                     <option key={header} value={header}>{header}</option>
                     ))}
