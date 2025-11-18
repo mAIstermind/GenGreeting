@@ -1,8 +1,15 @@
 // /api/register.ts
-import bcryptPkg from 'bcryptjs';
+import * as bcryptPkg from 'bcryptjs';
 
-// Handle CJS/ESM interop for bcryptjs
-const bcrypt = (bcryptPkg as any).default || bcryptPkg;
+// Helper to robustly get the bcrypt library regardless of import environment (CJS/ESM/CDN)
+const getBcrypt = () => {
+    const lib = bcryptPkg as any;
+    if (lib.hash && typeof lib.hash === 'function') return lib;
+    if (lib.default && lib.default.hash && typeof lib.default.hash === 'function') return lib.default;
+    return lib;
+};
+
+const bcrypt = getBcrypt();
 
 // --- START: CONFIGURATION ---
 
@@ -51,6 +58,9 @@ export default async function handler(req: any, res: any) {
         };
 
         step = 'HASH_PASSWORD';
+        if (!bcrypt.hash) {
+            throw new Error('bcrypt.hash function not found. Check library import.');
+        }
         const hashedPassword = await bcrypt.hash(password, 10); 
 
         step = 'LOOKUP_CONTACT';
