@@ -1,5 +1,5 @@
 // /api/register.ts
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 
 // --- START: CONFIGURATION ---
 
